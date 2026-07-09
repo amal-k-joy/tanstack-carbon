@@ -5,19 +5,51 @@ import styles from './scss/filterTagsSummary.module.scss';
 
 /**
  * FilterTagsSummary Component
- * Displays active column filters as dismissible tags with a clear all button
+ * Displays active column filters as dismissible tags with a clear all button.
+ * Also displays custom filter tags when custom filter config is used.
  *
- * @param {Array} columnFilters - Array of active column filters from TanStack Table
- * @param {Function} onRemoveFilter - Callback to remove a specific filter
- * @param {Function} onClearAll - Callback to clear all filters
- * @param {Object} table - TanStack table instance to get column metadata
+ * @param {Array}    columnFilters        - Active TanStack column filters
+ * @param {Function} onRemoveFilter       - Remove a specific column filter
+ * @param {Function} onClearAll           - Clear all column filters
+ * @param {Object}   table                - TanStack table instance
+ * @param {Object}   appliedCustomFilters - Flat key/value map of applied custom filters
+ * @param {Function} onClearCustomFilters - Clears all custom filters (calls onReset)
  */
-const FilterTagsSummary = ({ columnFilters, onRemoveFilter, onClearAll, table }) => {
+const FilterTagsSummary = ({
+  columnFilters,
+  onRemoveFilter,
+  onClearAll,
+  table,
+  appliedCustomFilters = {},
+  onRemoveCustomFilter,
+  onClearCustomFilters,
+}) => {
   const [showAllTags, setShowAllTags] = useState(false);
 
-  if (!columnFilters || columnFilters.length === 0) {
-    return null;
-  }
+  const formatFilterValue = (value) => {
+    if (!value || typeof value !== 'object') {
+      return String(value ?? '');
+    }
+    // Slider: { min, max }
+    if (value.min !== undefined && value.max !== undefined) {
+      return `${Number(value.min).toLocaleString()} – ${Number(
+        value.max
+      ).toLocaleString()}`;
+    }
+    // DateRange: { start, end }
+    if (value.start !== undefined || value.end !== undefined) {
+      const fmt = (d) =>
+        d
+          ? new Date(d).toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })
+          : '…';
+      return `${fmt(value.start)} – ${fmt(value.end)}`;
+    }
+    return String(value);
+  };
 
   const buildFilterTags = () => {
     const tags = [];
@@ -35,16 +67,18 @@ const FilterTagsSummary = ({ columnFilters, onRemoveFilter, onClearAll, table })
             label: `${columnName}: ${val}`,
             value: val,
             isArray: true,
+            isCustom: false,
           });
         });
       } else {
-        // NOTE: Handle single values (text, select, number filters)
+        // NOTE: Handle single values — format objects (slider, dateRange, date) into readable strings
         tags.push({
-          id: `${filter.id}-${filter.value}`,
+          id: `${filter.id}-${formatFilterValue(filter.value)}`,
           columnId: filter.id,
-          label: `${columnName}: ${filter.value}`,
+          label: `${columnName}: ${formatFilterValue(filter.value)}`,
           value: filter.value,
           isArray: false,
+          isCustom: false,
         });
       }
     });
@@ -52,14 +86,69 @@ const FilterTagsSummary = ({ columnFilters, onRemoveFilter, onClearAll, table })
     return tags;
   };
 
-  const filterTags = buildFilterTags();
+  // Build tags from applied custom filters — one tag per non-empty key
+  const buildCustomFilterTags = () => {
+    return Object.entries(appliedCustomFilters)
+      .filter(([, value]) => {
+        if (value === null || value === undefined || value === '') {
+          return false;
+        }
+        if (Array.isArray(value) && value.length === 0) {
+          return false;
+        }
+        // Object where every value is falsy — e.g. { start: undefined, end: undefined }
+        if (typeof value === 'object' && !Array.isArray(value)) {
+          return Object.values(value).some(Boolean);
+        }
+        return true;
+      })
+      .map(([key, value]) => ({
+        id: `custom-${key}-${formatFilterValue(value)}`,
+        columnId: key,
+        label: `${key}: ${formatFilterValue(value)}`,
+        value,
+        isArray: false,
+        isCustom: true,
+      }));
+  };
 
-  const visibleTags = showAllTags ? filterTags : filterTags.slice(0, MAX_VISIBLE_FILTER_TAGS);
+  const columnFilterTags = buildFilterTags();
+  const customFilterTags = buildCustomFilterTags();
+  const filterTags = [...columnFilterTags, ...customFilterTags];
 
-  const remainingCount = Math.max(filterTags.length - MAX_VISIBLE_FILTER_TAGS, 0);
+  const hasColumnFilters = columnFilters && columnFilters.length > 0;
+  const hasCustomFilters = customFilterTags.length > 0;
+
+  if (!hasColumnFilters && !hasCustomFilters) {
+    return null;
+  }
+
+  const visibleTags = showAllTags
+    ? filterTags
+    : filterTags.slice(0, MAX_VISIBLE_FILTER_TAGS);
+  const remainingCount = Math.max(
+    filterTags.length - MAX_VISIBLE_FILTER_TAGS,
+    0
+  );
 
   const handleRemoveTag = (tag) => {
-    onRemoveFilter(tag.columnId, tag.value, tag.isArray);
+    if (tag.isCustom) {
+      // Remove this single key from appliedCustomFilters and re-apply the rest
+      if (onRemoveCustomFilter) {
+        onRemoveCustomFilter(tag.columnId);
+      }
+    } else {
+      onRemoveFilter(tag.columnId, tag.value, tag.isArray);
+    }
+  };
+
+  const handleClearAll = () => {
+    if (hasColumnFilters) {
+      onClearAll();
+    }
+    if (hasCustomFilters && onClearCustomFilters) {
+      onClearCustomFilters();
+    }
   };
 
   return (
@@ -79,8 +168,7 @@ const FilterTagsSummary = ({ columnFilters, onRemoveFilter, onClearAll, table })
             type="high-contrast"
             filter={false}
             onClick={() => setShowAllTags(true)}
-            className={styles.moreTags}
-          >
+            className={styles.moreTags}>
             +{remainingCount} more
           </Tag>
         )}
@@ -90,13 +178,12 @@ const FilterTagsSummary = ({ columnFilters, onRemoveFilter, onClearAll, table })
             type="high-contrast"
             filter={false}
             onClick={() => setShowAllTags(false)}
-            className={styles.moreTags}
-          >
+            className={styles.moreTags}>
             Show less
           </Tag>
         )}
       </div>
-      <Button kind="ghost" size="sm" onClick={onClearAll}>
+      <Button kind="ghost" size="sm" onClick={handleClearAll}>
         Clear filters
       </Button>
     </div>

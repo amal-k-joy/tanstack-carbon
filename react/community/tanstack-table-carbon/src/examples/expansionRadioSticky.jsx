@@ -1,18 +1,7 @@
 import { useState } from 'react';
 import { TanstackTable } from '@/lib';
-import {
-  Add as AddIcon,
-  TableSplit as TableIcon,
-  TrashCan,
-  Download,
-} from '@carbon/icons-react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  Button,
-  UnorderedList,
-  ListItem,
-} from '@carbon/react';
+import { Add as AddIcon, TrashCan, Download } from '@carbon/icons-react';
+import { Button, UnorderedList, ListItem } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 import styles from './scss/expansionRadioSticky.module.scss';
 

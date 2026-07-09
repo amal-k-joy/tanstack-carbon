@@ -60,26 +60,3 @@
   align-items: center;
   gap: $spacing-05;
 }
-
-.toolbarSkeleton {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: $spacing-05;
-  padding-top: $spacing-06;
-  background-color: $layer-01;
-  border-bottom: 1px solid $border-subtle-01;
-  height: $spacing-09;
-  min-height: $spacing-09;
-}
-
-.toolbarLeft {
-  display: flex;
-  align-items: center;
-}
-
-.toolbarRight {
-  display: flex;
-  align-items: center;
-  gap: $spacing-05;
-}

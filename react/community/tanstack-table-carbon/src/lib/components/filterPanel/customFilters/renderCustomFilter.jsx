@@ -193,6 +193,7 @@ const renderCustomFilter = ({
           disabled={disabled}
           error={error}
           size={size}
+          dateFormat={filter.dateFormat}
           stopPropagation
         />
       );
@@ -209,6 +210,7 @@ const renderCustomFilter = ({
           disabled={disabled}
           error={error}
           size={size}
+          dateFormat={filter.dateFormat}
           stopPropagation
         />
       );

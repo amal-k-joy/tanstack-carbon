@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TanstackTable } from '@/lib';
 import { useTranslation } from 'react-i18next';
-import { TableSplit as TableIcon } from '@carbon/icons-react';
-import { Breadcrumb, BreadcrumbItem, Dropdown } from '@carbon/react';
+import { Dropdown } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 
 const LocalizedTable = () => {

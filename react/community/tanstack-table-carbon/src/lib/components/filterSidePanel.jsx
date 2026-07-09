@@ -41,6 +41,7 @@ const FilterSidePanel = ({
   onCustomFiltersReset,
   onSidePanelApply,
   onSidePanelReset,
+  hideSearch = false,
 }) => {
   const labels = useLabels();
 
@@ -86,7 +87,10 @@ const FilterSidePanel = ({
       return;
     }
 
-    if (typeof onCustomFiltersApply !== 'function' || typeof onCustomFiltersReset !== 'function') {
+    if (
+      typeof onCustomFiltersApply !== 'function' ||
+      typeof onCustomFiltersReset !== 'function'
+    ) {
       // eslint-disable-next-line no-console
       console.warn(
         'TanstackTable: features.sideFilterPanel.config requires both features.sideFilterPanel.onApply and features.sideFilterPanel.onReset.'
@@ -98,8 +102,7 @@ const FilterSidePanel = ({
     <div
       className={`${styles.filterSidePanel} ${open ? styles.open : ''}`}
       style={{ width: `${width}px` }}
-      data-filter-panel="true"
-    >
+      data-filter-panel="true">
       <div className={styles.sidePanelHeader}>
         <div className={styles.headerText}>
           <div className={styles.closePanelBtn}>
@@ -116,26 +119,32 @@ const FilterSidePanel = ({
 
           <span>{labels.filterPanelTitle}</span>
           {typeof onAdvancedFilterClick === 'function' && (
-            <Button size="sm" renderIcon={ArrowRight} kind="ghost" onClick={onAdvancedFilterClick}>
+            <Button
+              size="sm"
+              renderIcon={ArrowRight}
+              kind="ghost"
+              onClick={onAdvancedFilterClick}>
               {labels.filterPanelAdvancedButton}
             </Button>
           )}
         </div>
 
-        <div className={styles.searchWrapper}>
-          <Layer level={1}>
-            <Search
-              id="filter-search"
-              labelText={labels.filterPanelSearchLabel}
-              placeholder={labels.filterPanelSearchPlaceholder}
-              size={STANDARD_SIZE_MAP[size]}
-              closeButtonLabelText={labels.filterPanelClearSearchTooltip}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onClear={() => setSearchTerm('')}
-            />
-          </Layer>
-        </div>
+        {!hideSearch && (
+          <div className={styles.searchWrapper}>
+            <Layer level={1}>
+              <Search
+                id="filter-search"
+                labelText={labels.filterPanelSearchLabel}
+                placeholder={labels.filterPanelSearchPlaceholder}
+                size={STANDARD_SIZE_MAP[size]}
+                closeButtonLabelText={labels.filterPanelClearSearchTooltip}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onClear={() => setSearchTerm('')}
+              />
+            </Layer>
+          </div>
+        )}
       </div>
 
       <div className={styles.sidePanelBody}>
@@ -172,7 +181,10 @@ const FilterSidePanel = ({
               ) : (
                 <p className={styles.noFilters}>
                   {searchTerm
-                    ? labels.filterPanelNoMatchText.replace('{searchTerm}', searchTerm)
+                    ? labels.filterPanelNoMatchText.replace(
+                        '{searchTerm}',
+                        searchTerm
+                      )
                     : labels.filterPanelNoFiltersText}
                 </p>
               )}
@@ -185,16 +197,18 @@ const FilterSidePanel = ({
         <Button
           kind="secondary"
           onClick={useCustomFilters ? handleCustomClearClick : handleClearAll}
-          size={BUTTON_SIZE_MAP[size]}
-        >
+          size={BUTTON_SIZE_MAP[size]}>
           {labels.filterPanelClearButton}
         </Button>
         <Button
           kind="primary"
           onClick={useCustomFilters ? handleCustomApplyClick : handleApply}
           size={BUTTON_SIZE_MAP[size]}
-          disabled={useCustomFilters ? !isCustomFiltersValid : Object.keys(filterErrors).length > 0}
-        >
+          disabled={
+            useCustomFilters
+              ? !isCustomFiltersValid
+              : Object.keys(filterErrors).length > 0
+          }>
           {labels.filterPanelApplyButton}
         </Button>
       </div>
@@ -218,6 +232,7 @@ FilterSidePanel.propTypes = {
   onCustomFiltersReset: PropTypes.func,
   onSidePanelApply: PropTypes.func,
   onSidePanelReset: PropTypes.func,
+  hideSearch: PropTypes.bool,
 };
 
 export default React.memo(FilterSidePanel);

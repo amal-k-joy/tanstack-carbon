@@ -1,4 +1,3 @@
-/* eslint-disable custom/hooks-first */
 import React, {
   useMemo,
   useState,
@@ -78,20 +77,20 @@ import {
 
 const { Table, TableContainer } = DataTable;
 
-// NOTE: Type definitions for JSDoc IntelliSense support
+// Type definitions for JSDoc IntelliSense support
 /**
- * @typedef {import('./tanstackTable.js').TanstackTableProps} TanstackTableProps
- * @typedef {import('./tanstackTable.js').TableFeatures} TableFeatures
- * @typedef {import('./tanstackTable.js').PaginationFeature} PaginationFeature
- * @typedef {import('./tanstackTable.js').SelectionFeature} SelectionFeature
- * @typedef {import('./tanstackTable.js').SortingFeature} SortingFeature
- * @typedef {import('./tanstackTable.js').SearchFeature} SearchFeature
- * @typedef {import('./tanstackTable.js').VirtualizationFeature} VirtualizationFeature
- * @typedef {import('./tanstackTable.js').ExpansionFeature} ExpansionFeature
- * @typedef {import('./tanstackTable.js').EditingFeature} EditingFeature
- * @typedef {import('./tanstackTable.js').ColumnPinningFeature} ColumnPinningFeature
- * @typedef {import('./tanstackTable.js').ColumnSettingsFeature} ColumnSettingsFeature
- * @typedef {import('./tanstackTable.js').SideFilterPanelFeature} SideFilterPanelFeature
+ * @typedef {import('./tanstackTable.d.ts').TanstackTableProps} TanstackTableProps
+ * @typedef {import('./tanstackTable.d.ts').TableFeatures} TableFeatures
+ * @typedef {import('./tanstackTable.d.ts').PaginationFeature} PaginationFeature
+ * @typedef {import('./tanstackTable.d.ts').SelectionFeature} SelectionFeature
+ * @typedef {import('./tanstackTable.d.ts').SortingFeature} SortingFeature
+ * @typedef {import('./tanstackTable.d.ts').SearchFeature} SearchFeature
+ * @typedef {import('./tanstackTable.d.ts').VirtualizationFeature} VirtualizationFeature
+ * @typedef {import('./tanstackTable.d.ts').ExpansionFeature} ExpansionFeature
+ * @typedef {import('./tanstackTable.d.ts').EditingFeature} EditingFeature
+ * @typedef {import('./tanstackTable.d.ts').ColumnPinningFeature} ColumnPinningFeature
+ * @typedef {import('./tanstackTable.d.ts').ColumnSettingsFeature} ColumnSettingsFeature
+ * @typedef {import('./tanstackTable.d.ts').SideFilterPanelFeature} SideFilterPanelFeature
  */
 
 /**
@@ -168,18 +167,19 @@ const TanstackTable = ({
     onApply: sideFilterOnApply,
     onReset: sideFilterOnReset,
     customFilters,
+    hideSearch: sideFilterHideSearch,
   } = getSideFilterPanelFeatureConfig(sideFilterPanelFeature);
 
-  // Ref for table container (used for editable cells)
+  // NOTE: Ref for table container (used for editable cells)
   const tableContainerRef = useRef(null);
 
-  // Use custom hook for dynamic height management
+  // NOTE: Use custom hook for dynamic height management
   const { wrapperRef, skeletonRef } = useTableHeight(height, data.length);
 
-  // Use editable cell hook for keyboard navigation
+  // NOTE: Use editable cell hook for keyboard navigation
   const editableCell = useEditableCell(tableContainerRef);
 
-  // Close overflow menus on scroll
+  // NOTE: Close overflow menus on scroll
   useMenuCloseOnScroll(tableContainerRef);
 
   const sortingState = useSortingFeature(sortingFeature);
@@ -246,17 +246,13 @@ const TanstackTable = ({
     return addSelectionColumn(enhancedColumns, selectionType, tableId);
   }, [columns, selectionType, tableId]);
 
-  // Use consolidated search hook with debouncing and formatted value search
-  const {
-    globalFilter,
-    immediateSearchValue,
-    handleSearchChange,
-    globalFilterFn,
-  } = useTableSearch({
-    onSearchChange: searchOnChange,
-    debounceDelay: searchDebounceDelay,
-    columns: tableColumns,
-  });
+  // NOTE: Use TanStack's built-in global filter (includesString/'auto').
+  // row.getValue() reads from _valuesCache (O(1)) — no custom filterFn needed.
+  const { globalFilter, immediateSearchValue, handleSearchChange } =
+    useTableSearch({
+      onSearchChange: searchOnChange,
+      debounceDelay: searchDebounceDelay,
+    });
 
   // Handle column filter changes
   const handleColumnFiltersChange = useCallback((updater) => {
@@ -403,7 +399,6 @@ const TanstackTable = ({
     defaultColumn: { size: undefined, minSize: undefined, maxSize: undefined },
     state: tableState,
     ...tableHandlers,
-    globalFilterFn: isServerSideSearch ? undefined : globalFilterFn,
     ...tableRowModels,
     ...tableManualOptions,
     ...(tableInitialState && {
@@ -421,10 +416,12 @@ const TanstackTable = ({
     columnSettings?.onVisibilityChange
   );
 
-  // Use filter panel hook (only if enabled) - provides filter state management and custom filter functions
+  // Use filter panel hook (only if enabled) - provides filter state, column filter
+  // functions, and custom filter tag tracking all in one place.
   const filterPanel = useFilterSidePanel(
     enableFilterSidePanel ? table : null,
-    null
+    null,
+    customFilters
   );
 
   // Configure filter functions for columns with array-based filters (OR logic)
@@ -512,9 +509,10 @@ const TanstackTable = ({
     sideFilterWidth,
     tableSize,
     onAdvancedFilterClick,
-    customFilters,
+    customFilters: filterPanel.wrappedCustomFilters,
     sideFilterOnApply,
     sideFilterOnReset,
+    hideSearch: sideFilterHideSearch,
   });
 
   const tableContentStyle = getTanstackTableContentStyle({
@@ -528,6 +526,9 @@ const TanstackTable = ({
     handleRemoveFilter,
     handleClearAllFilters,
     table,
+    appliedCustomFilters: filterPanel.appliedCustomFilters,
+    onRemoveCustomFilter: filterPanel.handleRemoveCustomFilter,
+    onClearCustomFilters: filterPanel.clearCustomFilters,
   });
 
   const carbonTableProps = getTanstackTableProps({
@@ -593,54 +594,54 @@ const TanstackTable = ({
     initialPageSize: paginationFeature.initialPageSize,
     useZebraStyles,
     showPagination: paginationFeature.enabled,
-    showToolbar: !!toolbar,
     height,
   });
-
-  if (isLoading) {
-    return (
-      <div ref={skeletonRef}>
-        <CustomTableSkeleton {...skeletonProps} />
-      </div>
-    );
-  }
 
   return (
     <LabelsProvider labels={labels}>
       <div className={styles.tableWrapper} ref={wrapperRef}>
         <TableContainer>
-          <TableToolbar {...toolbarProps} />
+          {/* Toolbar is always rendered; disabled when loading */}
+          <TableToolbar {...toolbarProps} isLoading={isLoading} />
 
           {/* Filter Panel */}
           <div ref={sidePanelRef}>
             {enableFilterSidePanel && <FilterSidePanel {...filterPanelProps} />}
           </div>
 
-          {/* Table */}
+          {/* Table content area — skeleton replaces table body while loading */}
           <div
             ref={tableContainerRef}
             className={styles.tableContentWrapper}
             style={tableContentStyle}>
-            {/* Filter Tags Summary */}
+            {/* Filter Tags Summary — always visible so active chips stay shown during loading */}
             {enableFilterSidePanel && (
               <FilterTagsSummary {...filterTagsProps} />
             )}
 
-            <Table {...carbonTableProps}>
-              <VirtualizedTableHead {...virtualizedHeadProps} />
+            {isLoading ? (
+              <div ref={skeletonRef}>
+                <CustomTableSkeleton {...skeletonProps} />
+              </div>
+            ) : (
+              <>
+                <Table {...carbonTableProps}>
+                  <VirtualizedTableHead {...virtualizedHeadProps} />
 
-              {shouldRenderVirtualizedBody ? (
-                <VirtualizedTableBody {...virtualizedBodyProps} />
-              ) : (
-                <StandardTableBody {...standardBodyProps} />
-              )}
-            </Table>
+                  {shouldRenderVirtualizedBody ? (
+                    <VirtualizedTableBody {...virtualizedBodyProps} />
+                  ) : (
+                    <StandardTableBody {...standardBodyProps} />
+                  )}
+                </Table>
 
-            {/* Pagination */}
-            <PaginationSection
-              feature={paginationSectionFeature}
-              table={table}
-            />
+                {/* Pagination */}
+                <PaginationSection
+                  feature={paginationSectionFeature}
+                  table={table}
+                />
+              </>
+            )}
           </div>
         </TableContainer>
 

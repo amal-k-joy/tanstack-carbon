@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DatePicker, DatePickerInput, Layer } from '@carbon/react';
 import { STANDARD_SIZE_MAP } from '../../../constants/constants';
+import { derivePlaceholderFromDateFormat } from '../../../utils/dateFormatHelpers';
 
 const DateFilterField = ({
   id,
@@ -11,9 +12,12 @@ const DateFilterField = ({
   disabled = false,
   error,
   size = 'md',
-  placeholder = 'mm/dd/yyyy',
+  placeholder,
+  dateFormat,
   stopPropagation = false,
 }) => {
+  const resolvedPlaceholder = derivePlaceholderFromDateFormat(placeholder, dateFormat);
+
   const content = (
     <Layer level={1}>
       <DatePicker
@@ -23,10 +27,11 @@ const DateFilterField = ({
           onChange(dates?.[0] || null);
         }}
         disabled={disabled}
+        {...(dateFormat !== undefined && { dateFormat })}
       >
         <DatePickerInput
           id={id}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           labelText={label}
           size={STANDARD_SIZE_MAP[size]}
           invalid={!!error}
@@ -52,6 +57,7 @@ DateFilterField.propTypes = {
   error: PropTypes.string,
   size: PropTypes.string,
   placeholder: PropTypes.string,
+  dateFormat: PropTypes.string,
   stopPropagation: PropTypes.bool,
 };
 

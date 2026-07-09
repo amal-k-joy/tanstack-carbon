@@ -1,11 +1,6 @@
 import React, { useMemo } from 'react';
 import { TanstackTable } from '@/lib';
-import {
-  TableSplit as TableIcon,
-  TrashCan,
-  Download,
-} from '@carbon/icons-react';
-import { Breadcrumb, BreadcrumbItem } from '@carbon/react';
+import { TrashCan, Download } from '@carbon/icons-react';
 import commonStyles from './scss/common.module.scss';
 
 // Sample data generator

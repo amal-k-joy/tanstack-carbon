@@ -1,20 +1,7 @@
 import { useState, useEffect } from 'react';
 import { TanstackTable, TableOverflowMenu } from '@/lib';
-import {
-  Add as AddIcon,
-  Download,
-  Renew,
-  Settings,
-  TableSplit as TableIcon,
-} from '@carbon/icons-react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  Button,
-  Tag,
-  IconButton,
-  OverflowMenuItem,
-} from '@carbon/react';
+import { Add as AddIcon, Download, Renew, Settings } from '@carbon/icons-react';
+import { Button, Tag, IconButton, OverflowMenuItem } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 
 // Mock API function to simulate server-side data fetching

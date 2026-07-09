@@ -50,7 +50,7 @@ const SimpleFilterField = ({
   labels,
 }) => {
   const { column, matchedByLabel } = columnData;
-  const { filterVariant } = column.columnDef.meta ?? {};
+  const { filterVariant, dateFormat } = column.columnDef.meta ?? {};
   const columnId = column.id;
   const columnHeader = column.columnDef.header;
   const filterLabel = getFilterLabel(columnHeader, columnId, labels);
@@ -255,6 +255,7 @@ const SimpleFilterField = ({
             }}
             label={filterLabel}
             size={size}
+            dateFormat={dateFormat}
           />
         </div>
       );
@@ -274,6 +275,7 @@ const SimpleFilterField = ({
               updateLocalFilter(columnId, value);
             }}
             size={size}
+            dateFormat={dateFormat}
           />
         </div>
       );

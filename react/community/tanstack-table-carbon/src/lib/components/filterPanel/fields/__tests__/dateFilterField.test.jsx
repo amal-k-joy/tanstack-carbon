@@ -3,12 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DateFilterField from '../dateFilterField';
 
-const mockDatePicker = vi.fn(({ children, onChange, value, disabled, datePickerType }) => (
+const mockDatePicker = vi.fn(({ children, onChange, value, disabled, datePickerType, dateFormat }) => (
   <div
     data-testid="mock-date-picker"
     data-value={value || ''}
     data-disabled={String(Boolean(disabled))}
     data-picker-type={datePickerType}
+    data-date-format={dateFormat || ''}
   >
     <button type="button" onClick={() => onChange(['2026-05-25'])}>
       Trigger Date Change
@@ -109,6 +110,26 @@ describe('DateFilterField', () => {
 
     expect(onChange).toHaveBeenNthCalledWith(1, '2026-05-25');
     expect(onChange).toHaveBeenNthCalledWith(2, null);
+  });
+
+  it('forwards dateFormat to DatePicker when provided', () => {
+    render(
+      <DateFilterField
+        id="created-on"
+        label="Created On"
+        value={null}
+        onChange={onChange}
+        dateFormat="Y-m-d"
+      />
+    );
+
+    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute('data-date-format', 'Y-m-d');
+  });
+
+  it('does not set dateFormat on DatePicker when not provided', () => {
+    render(<DateFilterField id="created-on" label="Created On" value={null} onChange={onChange} />);
+
+    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute('data-date-format', '');
   });
 
   it('stops click propagation when stopPropagation is enabled', () => {

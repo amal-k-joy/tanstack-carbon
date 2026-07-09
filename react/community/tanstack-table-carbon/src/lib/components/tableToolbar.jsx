@@ -1,5 +1,5 @@
 /* eslint-disable custom/hooks-first */
-import React, { Fragment, useMemo } from 'react';
+import React, { Fragment, useMemo, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Filter, Settings } from '@carbon/icons-react';
 import {
@@ -9,7 +9,7 @@ import {
   OverflowMenuItem,
 } from '@carbon/react';
 import { useLabels } from '../contexts/labelsContext.jsx';
-import useResponsiveBatchActions from '../hooks/useResponsiveBatchActions.js';
+import useResponsiveBatchActions from '../hooks/useResponsiveBatchActions';
 import styles from './scss/tableToolbar.module.scss';
 
 const {
@@ -98,6 +98,7 @@ const TableToolbar = ({
   searchValue = '',
   onToggleFilterPanel,
   onOpenCustomizePanel,
+  isLoading = false,
 }) => {
   const labels = useLabels();
   // NOTE: Derive enableCustomizeColumn from toolbar configuration
@@ -156,6 +157,35 @@ const TableToolbar = ({
 
   // NOTE: Use responsive batch actions hook
   const { shouldUseOverflow } = useResponsiveBatchActions(batchActions);
+
+  const toolbarRef = useRef(null);
+  const savedFocusRef = useRef(null);
+
+  // NOTE: `inert` must be set imperatively — React 18 does not serialise it to the DOM
+  // (only React 19+ does). Setting it via setAttribute ensures the browser treats the
+  // entire toolbar subtree as inert: no focus, no keyboard events, hidden from a11y tree.
+  // When loading starts, save the currently focused element inside the toolbar so focus
+  // can be restored to it once loading finishes.
+  useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) {
+      return;
+    }
+    if (isLoading) {
+      // Save focus only if it sits inside this toolbar
+      if (el.contains(document.activeElement)) {
+        savedFocusRef.current = document.activeElement;
+      }
+      el.setAttribute('inert', '');
+    } else {
+      el.removeAttribute('inert');
+      // Restore focus to the element that was active before loading
+      if (savedFocusRef.current && el.contains(savedFocusRef.current)) {
+        savedFocusRef.current.focus();
+      }
+      savedFocusRef.current = null;
+    }
+  }, [isLoading]);
 
   // NOTE: Helper function to render toolbar elements based on configuration
   const renderToolbarElement = (item, index) => {
@@ -264,11 +294,16 @@ const TableToolbar = ({
   };
 
   // NOTE: Determine toolbar elements to render
-  const toolbarElementsToRender = toolbar || [
-    { type: 'filter' },
-    { type: 'search' },
-    { type: 'settings' },
-  ];
+  const toolbarElementsToRender = toolbar || [];
+
+  // Nothing to render — no toolbar items AND no batch actions bar possible
+  const hasBatchActionsBar =
+    enableSelection &&
+    selectionType === 'checkbox' &&
+    preparedBatchActions.length > 0;
+  if (toolbarElementsToRender.length === 0 && !hasBatchActionsBar) {
+    return null;
+  }
 
   // NOTE: Render batch actions based on screen size
   const renderBatchActions = () => {
@@ -401,7 +436,11 @@ const TableToolbar = ({
   };
 
   return (
-    <div className={styles.tblToolbar}>
+    <div
+      ref={toolbarRef}
+      className={`${styles.tblToolbar}${
+        isLoading ? ` ${styles.tblToolbarDisabled}` : ''
+      }`}>
       <CarbonTableToolbar aria-label={labels.toolbarAriaLabel}>
         {/* NOTE: Toolbar Content */}
         <TableToolbarContent
@@ -438,6 +477,7 @@ TableToolbar.propTypes = {
   totalCount: PropTypes.number,
   onCancelSelection: PropTypes.func,
   onSelectAll: PropTypes.func,
+  isLoading: PropTypes.bool,
   batchActions: PropTypes.arrayOf(
     PropTypes.shape({
       type: PropTypes.oneOf(['button', 'overflow', 'custom']), // NOTE: "button" for regular action, "overflow" for menu, "custom" for custom element

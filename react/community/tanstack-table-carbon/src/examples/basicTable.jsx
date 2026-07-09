@@ -1,10 +1,6 @@
 import { TanstackTable } from '@/lib';
-import {
-  TrashCan,
-  Download,
-  TableSplit as TableIcon,
-} from '@carbon/icons-react';
-import { Breadcrumb, BreadcrumbItem, Button } from '@carbon/react';
+import { TrashCan, Download } from '@carbon/icons-react';
+import { Button } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 
 const ExampleTanstack = () => {

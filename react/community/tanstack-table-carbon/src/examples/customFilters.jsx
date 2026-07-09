@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { TanstackTable } from '@/lib';
-import { TableSplit as TableIcon } from '@carbon/icons-react';
-import { Breadcrumb, BreadcrumbItem } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 
 /**
@@ -276,7 +274,7 @@ const ExampleWithCustomFilters = () => {
     []
   );
 
-  // Handle custom filter apply
+  // Handle custom filter apply — filterValues is the flat filter state object.
   const handleCustomFiltersApply = (filterValues) => {
     let filtered = [...data];
 
@@ -325,11 +323,13 @@ const ExampleWithCustomFilters = () => {
       filtered = filtered.filter((item) => item.age >= filterValues.ageSlider);
     }
 
-    // 8. Date filter - Specific date
+    // 8. Date filter - Specific date (Flatpickr gives a Date object; compare as ISO string)
     if (filterValues.specificDate) {
-      filtered = filtered.filter(
-        (item) => item.joinDate === filterValues.specificDate
-      );
+      const d = new Date(filterValues.specificDate);
+      const selectedISO = `${d.getFullYear()}-${String(
+        d.getMonth() + 1
+      ).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      filtered = filtered.filter((item) => item.joinDate === selectedISO);
     }
 
     // 9. DateRange filter

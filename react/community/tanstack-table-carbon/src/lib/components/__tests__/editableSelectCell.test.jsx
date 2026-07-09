@@ -3,15 +3,21 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import EditableSelectCell from '../editableSelectCell';
 
-const mockTableCell = vi.fn(({ children, id, onKeyDown, onDoubleClick, ...rest }) => (
-  <td id={id} onKeyDown={onKeyDown} onDoubleClick={onDoubleClick} {...rest}>
-    {children}
-  </td>
-));
+const mockTableCell = vi.fn(
+  ({ children, id, onKeyDown, onDoubleClick, ...rest }) => (
+    <td id={id} onKeyDown={onKeyDown} onDoubleClick={onDoubleClick} {...rest}>
+      {children}
+    </td>
+  )
+);
 
 const mockDropdown = vi.fn(
   ({ id, label, items, selectedItem, onChange, direction, itemToString }) => (
-    <div data-testid="dropdown" data-dropdown-id={id} data-label={label} data-direction={direction}>
+    <div
+      data-testid="dropdown"
+      data-dropdown-id={id}
+      data-label={label}
+      data-direction={direction}>
       <button
         type="button"
         className="cds--list-box__field"
@@ -19,8 +25,7 @@ const mockDropdown = vi.fn(
         data-items={JSON.stringify(items)}
         data-selected={JSON.stringify(selectedItem)}
         data-item-to-string={itemToString(selectedItem)}
-        onClick={() => onChange?.({ selectedItem: items[0] })}
-      >
+        onClick={() => onChange?.({ selectedItem: items[0] })}>
         Dropdown
       </button>
     </div>
@@ -105,7 +110,7 @@ describe('EditableSelectCell', () => {
     };
 
     cell = {
-      row: { index: 0 },
+      row: { index: 0, original: { status: 'Active' } },
       column: {
         id: 'status',
       },
@@ -211,7 +216,11 @@ describe('EditableSelectCell', () => {
 
     fireEvent.click(screen.getByTestId('dropdown-trigger'));
 
-    expect(updateData).toHaveBeenCalledWith(0, 'status', 'Active');
+    expect(updateData).toHaveBeenCalledWith(
+      { status: 'Active' },
+      'status',
+      'Active'
+    );
     expect(setEditingId).toHaveBeenCalledWith(null);
 
     vi.advanceTimersByTime(10);
@@ -231,13 +240,19 @@ describe('EditableSelectCell', () => {
 
     fireEvent.click(screen.getByTestId('dropdown-trigger'));
 
-    expect(updateData).toHaveBeenCalledWith(0, 'status', 'ACTIVE');
+    expect(updateData).toHaveBeenCalledWith(
+      { status: 'Active' },
+      'status',
+      'ACTIVE'
+    );
     expect(setEditingId).toHaveBeenCalledWith(null);
   });
 
   it('does not save when selectedItem is missing', () => {
     mockDropdown.mockImplementationOnce(({ onChange }) => (
-      <div data-testid="dropdown-empty" onClick={() => onChange?.({ selectedItem: null })}>
+      <div
+        data-testid="dropdown-empty"
+        onClick={() => onChange?.({ selectedItem: null })}>
         Dropdown
       </div>
     ));
@@ -256,13 +271,25 @@ describe('EditableSelectCell', () => {
       editingId: 'cell__row-1-status',
     });
 
-    expect(windowAddEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
-    expect(addEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function));
+    expect(windowAddEventListenerSpy).toHaveBeenCalledWith(
+      'resize',
+      expect.any(Function)
+    );
+    expect(addEventListenerSpy).toHaveBeenCalledWith(
+      'mousedown',
+      expect.any(Function)
+    );
 
     unmount();
 
-    expect(windowRemoveEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function));
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('mousedown', expect.any(Function));
+    expect(windowRemoveEventListenerSpy).toHaveBeenCalledWith(
+      'resize',
+      expect.any(Function)
+    );
+    expect(removeEventListenerSpy).toHaveBeenCalledWith(
+      'mousedown',
+      expect.any(Function)
+    );
   });
 
   it('closes edit mode when clicking outside', () => {
@@ -273,8 +300,7 @@ describe('EditableSelectCell', () => {
           if (node) {
             node.contains = vi.fn(() => false);
           }
-        }}
-      >
+        }}>
         Dropdown
       </div>
     ));
@@ -331,7 +357,10 @@ describe('EditableSelectCell', () => {
       editingId: 'cell__row-1-status',
     });
 
-    expect(screen.getByTestId('dropdown')).toHaveAttribute('data-direction', 'bottom');
+    expect(screen.getByTestId('dropdown')).toHaveAttribute(
+      'data-direction',
+      'bottom'
+    );
   });
 
   it('keeps bottom direction when using table container fallback', () => {
@@ -362,7 +391,10 @@ describe('EditableSelectCell', () => {
       editingId: 'cell__row-1-status',
     });
 
-    expect(screen.getByTestId('dropdown')).toHaveAttribute('data-direction', 'bottom');
+    expect(screen.getByTestId('dropdown')).toHaveAttribute(
+      'data-direction',
+      'bottom'
+    );
   });
 
   it('renders dropdown in edit mode with bottom direction for object options', () => {
@@ -374,7 +406,13 @@ describe('EditableSelectCell', () => {
       ],
     });
 
-    expect(screen.getByTestId('dropdown')).toHaveAttribute('data-direction', 'bottom');
-    expect(screen.getByTestId('dropdown-trigger')).toHaveAttribute('data-item-to-string', 'Active');
+    expect(screen.getByTestId('dropdown')).toHaveAttribute(
+      'data-direction',
+      'bottom'
+    );
+    expect(screen.getByTestId('dropdown-trigger')).toHaveAttribute(
+      'data-item-to-string',
+      'Active'
+    );
   });
 });

@@ -11,6 +11,7 @@ vi.mock('../../hooks/useResponsiveBatchActions', () => ({
 vi.mock('./scss/tableToolbar.module.scss', () => ({
   default: {
     tblToolbar: 'tblToolbar',
+    tblToolbarDisabled: 'tblToolbarDisabled',
     tblToolbarContent: 'tblToolbarContent',
     settingsMenu: 'settingsMenu',
     bactActionOverflowMenuUl: 'bactActionOverflowMenuUl',
@@ -26,21 +27,33 @@ vi.mock('@carbon/icons-react', () => ({
 vi.mock('@carbon/react', () => {
   const React = require('react');
 
-  const OverflowMenu = ({ children, ariaLabel, 'aria-label': ariaLabelProp, iconDescription }) => (
+  const OverflowMenu = ({
+    children,
+    ariaLabel,
+    'aria-label': ariaLabelProp,
+    iconDescription,
+  }) => (
     <div>
-      <button type="button">{ariaLabelProp || ariaLabel || iconDescription}</button>
+      <button type="button">
+        {ariaLabelProp || ariaLabel || iconDescription}
+      </button>
       <div>{children}</div>
     </div>
   );
 
-  const OverflowMenuItem = ({ itemText, onClick, disabled, isDelete, hasDivider }) => (
+  const OverflowMenuItem = ({
+    itemText,
+    onClick,
+    disabled,
+    isDelete,
+    hasDivider,
+  }) => (
     <button
       type="button"
       disabled={disabled}
       data-delete={isDelete ? 'true' : 'false'}
       data-divider={hasDivider ? 'true' : 'false'}
-      onClick={onClick}
-    >
+      onClick={onClick}>
       {itemText}
     </button>
   );
@@ -54,13 +67,29 @@ vi.mock('@carbon/react', () => {
       {children}
     </div>
   );
-  const TableBatchAction = ({ children, onClick, iconDescription, tabIndex }) => (
-    <button type="button" onClick={onClick} aria-label={iconDescription} tabIndex={tabIndex}>
+  const TableBatchAction = ({
+    children,
+    onClick,
+    iconDescription,
+    tabIndex,
+  }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={iconDescription}
+      tabIndex={tabIndex}>
       {children}
     </button>
   );
-  const TableToolbarContent = ({ children, className, 'aria-hidden': ariaHidden }) => (
-    <div data-testid="toolbar-content" className={className} aria-hidden={ariaHidden}>
+  const TableToolbarContent = ({
+    children,
+    className,
+    'aria-hidden': ariaHidden,
+  }) => (
+    <div
+      data-testid="toolbar-content"
+      className={className}
+      aria-hidden={ariaHidden}>
       {children}
     </div>
   );
@@ -138,6 +167,7 @@ describe('TableToolbar', () => {
         ],
       },
       { type: 'custom', element: <div>Custom toolbar content</div> },
+      { type: 'unknown' },
     ];
 
     render(<TableToolbar {...props} />);
@@ -163,15 +193,34 @@ describe('TableToolbar', () => {
     expect(props.onSearchChange).toHaveBeenCalledWith('typed value');
   });
 
-  it('uses default toolbar when toolbar prop is not provided', () => {
+  it('renders nothing when toolbar is undefined', () => {
     useResponsiveBatchActions.mockReturnValue({ shouldUseOverflow: false });
     const props = baseProps();
     props.toolbar = undefined;
 
-    render(<TableToolbar {...props} />);
+    const { container } = render(<TableToolbar {...props} />);
 
-    expect(screen.getByLabelText('Toggle filter panel')).toBeInTheDocument();
-    expect(screen.getByLabelText('Search table')).toBeInTheDocument();
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders nothing when toolbar is null', () => {
+    useResponsiveBatchActions.mockReturnValue({ shouldUseOverflow: false });
+    const props = baseProps();
+    props.toolbar = null;
+
+    const { container } = render(<TableToolbar {...props} />);
+
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('renders nothing when toolbar is an empty array', () => {
+    useResponsiveBatchActions.mockReturnValue({ shouldUseOverflow: false });
+    const props = baseProps();
+    props.toolbar = [];
+
+    const { container } = render(<TableToolbar {...props} />);
+
+    expect(container.firstChild).toBeNull();
   });
 
   it('hides settings menu when there are no renderable items', () => {
@@ -185,7 +234,12 @@ describe('TableToolbar', () => {
     ];
     props.onOpenCustomizePanel = vi.fn();
 
-    render(<TableToolbar {...props} toolbar={[{ type: 'settings', menuItems: [] }]} />);
+    render(
+      <TableToolbar
+        {...props}
+        toolbar={[{ type: 'settings', menuItems: [] }]}
+      />
+    );
 
     expect(screen.queryByText('Column settings')).not.toBeInTheDocument();
   });
@@ -218,7 +272,10 @@ describe('TableToolbar', () => {
     expect(buttonClick).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }]);
 
     fireEvent.click(screen.getByText('Export'));
-    expect(overflowClick).toHaveBeenCalledWith('export', [{ id: 1 }, { id: 2 }]);
+    expect(overflowClick).toHaveBeenCalledWith('export', [
+      { id: 1 },
+      { id: 2 },
+    ]);
 
     expect(screen.getByText('Custom 2')).toBeInTheDocument();
   });
@@ -251,7 +308,10 @@ describe('TableToolbar', () => {
     expect(buttonClick).toHaveBeenCalledWith([{ id: 1 }, { id: 2 }]);
 
     fireEvent.click(screen.getByText('Export'));
-    expect(overflowClick).toHaveBeenCalledWith('export', [{ id: 1 }, { id: 2 }]);
+    expect(overflowClick).toHaveBeenCalledWith('export', [
+      { id: 1 },
+      { id: 2 },
+    ]);
 
     expect(screen.getByText('Bulk dropdown')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Archive' })).toBeDisabled();
@@ -262,7 +322,9 @@ describe('TableToolbar', () => {
     const props = baseProps();
     props.enableSelection = false;
     props.selectionType = 'radio';
-    props.batchActions = [{ label: 'Delete', icon: () => null, onClick: vi.fn() }];
+    props.batchActions = [
+      { label: 'Delete', icon: () => null, onClick: vi.fn() },
+    ];
 
     render(<TableToolbar {...props} />);
 

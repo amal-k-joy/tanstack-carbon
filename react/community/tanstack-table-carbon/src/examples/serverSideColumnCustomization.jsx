@@ -1,13 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TanstackTable } from '@/lib';
+import { Add as AddIcon, Renew } from '@carbon/icons-react';
 import {
-  Add as AddIcon,
-  Renew,
-  TableSplit as TableIcon,
-} from '@carbon/icons-react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
   Button,
   CodeSnippet,
   InlineNotification,

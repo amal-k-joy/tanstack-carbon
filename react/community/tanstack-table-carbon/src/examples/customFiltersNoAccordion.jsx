@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import { TanstackTable } from '@/lib';
-import { TableSplit as TableIcon } from '@carbon/icons-react';
-import { Breadcrumb, BreadcrumbItem } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 
 /**

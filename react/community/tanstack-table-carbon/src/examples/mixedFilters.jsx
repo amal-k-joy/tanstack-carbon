@@ -1,16 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { TanstackTable } from '@/lib';
-import {
-  TableSplit as TableIcon,
-  TrashCan,
-  Download,
-} from '@carbon/icons-react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  UnorderedList,
-  ListItem,
-} from '@carbon/react';
+import { TrashCan, Download } from '@carbon/icons-react';
+import { UnorderedList, ListItem } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 
 /**
@@ -20,38 +11,54 @@ import commonStyles from './scss/common.module.scss';
  * Some filters are grouped in accordion sections, others are standalone.
  */
 
-const ExampleWithMixedFilters = () => {
-  const [data] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      age: 28,
-      department: 'Engineering',
-      salary: 75000,
-      status: 'Active',
-      verified: true,
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      age: 34,
-      department: 'Marketing',
-      salary: 65000,
-      status: 'Active',
-      verified: true,
-    },
-    {
-      id: 3,
-      name: 'Bob Johnson',
-      age: 45,
-      department: 'Sales',
-      salary: 80000,
-      status: 'Inactive',
-      verified: false,
-    },
-  ]);
+const SOURCE_DATA = [
+  {
+    id: 1,
+    name: 'John Doe',
+    age: 28,
+    department: 'Engineering',
+    salary: 75000,
+    status: 'Active',
+    verified: true,
+  },
+  {
+    id: 2,
+    name: 'Jane Smith',
+    age: 34,
+    department: 'Marketing',
+    salary: 65000,
+    status: 'Active',
+    verified: true,
+  },
+  {
+    id: 3,
+    name: 'Bob Johnson',
+    age: 45,
+    department: 'Sales',
+    salary: 80000,
+    status: 'Inactive',
+    verified: false,
+  },
+];
 
-  const [filteredData, setFilteredData] = useState(data);
+const ExampleWithMixedFilters = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [filteredData, setFilteredData] = useState([]);
+
+  // Simulate API call with initial loading delay
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 3500));
+
+      setFilteredData(SOURCE_DATA);
+      setIsLoading(false);
+    };
+
+    fetchData();
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -184,8 +191,9 @@ const ExampleWithMixedFilters = () => {
     []
   );
 
+  // Handle custom filter apply — filterValues is the flat filter state object.
   const handleCustomFiltersApply = (filterValues) => {
-    let filtered = [...data];
+    let filtered = [...SOURCE_DATA];
 
     // Quick search
     if (filterValues.quickSearch) {
@@ -239,7 +247,7 @@ const ExampleWithMixedFilters = () => {
   };
 
   const handleCustomFiltersReset = () => {
-    setFilteredData(data);
+    setFilteredData(SOURCE_DATA);
   };
 
   // Batch actions for selected rows
@@ -305,6 +313,7 @@ const ExampleWithMixedFilters = () => {
         <TanstackTable
           data={filteredData}
           columns={columns}
+          isLoading={isLoading}
           toolbar={[{ type: 'filter' }, { type: 'search' }]}
           features={{
             selection: {

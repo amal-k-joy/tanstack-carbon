@@ -68,7 +68,9 @@ const EditableCell = ({
           setInvalidText('');
           setEditValue(null);
           setTimeout(() => {
-            const activeCell = tableContainerRef?.current?.querySelector(`#cell__${id}`);
+            const activeCell = tableContainerRef?.current?.querySelector(
+              `#cell__${id}`
+            );
             if (activeCell) {
               activeCell.tabIndex = 0;
               activeCell.focus();
@@ -82,21 +84,29 @@ const EditableCell = ({
           if (validationResult !== true) {
             setInvalid(true);
             setInvalidText(
-              typeof validationResult === 'string' ? validationResult : 'Invalid value'
+              typeof validationResult === 'string'
+                ? validationResult
+                : 'Invalid value'
             );
             return; // NOTE: Don't save if invalid
           }
         }
 
         // NOTE: Save if valid
-        table.options.meta?.updateData(cell.row.index, cell.column.id, valueToSave);
+        table.options.meta?.updateData(
+          cell.row.original,
+          cell.column.id,
+          valueToSave
+        );
         setEditingId(null);
         setInvalid(false);
         setInvalidText('');
         setEditValue(null);
         // NOTE: Refocus the cell after saving
         setTimeout(() => {
-          const activeCell = tableContainerRef?.current?.querySelector(`#cell__${id}`);
+          const activeCell = tableContainerRef?.current?.querySelector(
+            `#cell__${id}`
+          );
           if (activeCell) {
             activeCell.tabIndex = 0;
             activeCell.focus();
@@ -104,7 +114,15 @@ const EditableCell = ({
         }, 10);
       }
     },
-    [editValue, cell, validateFn, table.options.meta, setEditingId, tableContainerRef, id]
+    [
+      editValue,
+      cell,
+      validateFn,
+      table.options.meta,
+      setEditingId,
+      tableContainerRef,
+      id,
+    ]
   );
 
   const handleChange = useCallback(
@@ -147,7 +165,11 @@ const EditableCell = ({
     }
 
     // NOTE: Save cell data
-    table.options.meta?.updateData(cell.row.index, cell.column.id, valueToSave);
+    table.options.meta?.updateData(
+      cell.row.original,
+      cell.column.id,
+      valueToSave
+    );
     setEditingId(null);
     setInvalid(false);
     setInvalidText('');
@@ -161,8 +183,7 @@ const EditableCell = ({
       className={styles.editingCell}
       style={{
         width: style?.width,
-      }}
-    >
+      }}>
       <TextInput
         className={styles.editableCellInput}
         id={`cell__${id}`}
@@ -184,8 +205,7 @@ const EditableCell = ({
       onKeyDown={handleEditableCellKeyDown}
       onDoubleClick={handleDoubleClick}
       className={styles['editable-cell']}
-      {...rest}
-    >
+      {...rest}>
       <div className={styles.editableCellContent}>
         {children}
         <Edit size={16} className={styles.editableCellIcon} />

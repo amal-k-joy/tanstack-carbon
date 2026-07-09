@@ -16,7 +16,6 @@ const defaultProps = {
   tableSize: 'md',
   useZebraStyles: false,
   showPagination: false,
-  showToolbar: false,
   height: null,
 };
 
@@ -147,43 +146,13 @@ describe('CustomTableSkeleton', () => {
   });
 
   describe('Toolbar skeleton', () => {
-    it('should not render toolbar skeleton when showToolbar is false', () => {
-      const { container } = render(
-        <CustomTableSkeleton {...defaultProps} showToolbar={false} />
-      );
+    it('should never render a toolbar skeleton (toolbar is always the real toolbar now)', () => {
+      const { container } = render(<CustomTableSkeleton {...defaultProps} />);
 
-      // NOTE: No toolbar div rendered
+      // NOTE: Toolbar skeleton was removed — the real toolbar is always rendered outside
       expect(
         container.querySelector('[class*="toolbarSkeleton"]')
       ).not.toBeInTheDocument();
-    });
-
-    it('should render toolbar skeleton when showToolbar is true', () => {
-      const { container } = render(
-        <CustomTableSkeleton {...defaultProps} showToolbar={true} />
-      );
-
-      expect(
-        container.querySelector('[class*="toolbarSkeleton"]')
-      ).toBeInTheDocument();
-    });
-
-    it('should render 4 SkeletonText items inside the toolbar', () => {
-      const { container } = render(
-        <CustomTableSkeleton
-          {...defaultProps}
-          showToolbar={true}
-          rowCount={0}
-        />
-      );
-
-      // NOTE: Toolbar renders exactly 4 SkeletonText: left(150px) + right(200px, 40px, 40px)
-      const toolbarSkeleton = container.querySelector(
-        '[class*="toolbarSkeleton"]'
-      );
-      expect(
-        toolbarSkeleton.querySelectorAll('.cds--skeleton__text')
-      ).toHaveLength(4);
     });
   });
 
@@ -239,13 +208,9 @@ describe('CustomTableSkeleton', () => {
       expect(tableContainer.style.maxHeight).toBe('');
     });
 
-    it('should apply numeric height directly as maxHeight when showToolbar is false', () => {
+    it('should apply numeric height directly as maxHeight', () => {
       const { container } = render(
-        <CustomTableSkeleton
-          {...defaultProps}
-          height={600}
-          showToolbar={false}
-        />
+        <CustomTableSkeleton {...defaultProps} height={600} />
       );
 
       const tableContainer = container.querySelector(
@@ -254,45 +219,9 @@ describe('CustomTableSkeleton', () => {
       expect(tableContainer.style.maxHeight).toBe('600px');
     });
 
-    it('should subtract toolbar height (48px) from numeric height when showToolbar is true', () => {
+    it('should apply string height as-is', () => {
       const { container } = render(
-        <CustomTableSkeleton
-          {...defaultProps}
-          height={600}
-          showToolbar={true}
-        />
-      );
-
-      const tableContainer = container.querySelector(
-        '.cds--data-table-container'
-      );
-      // NOTE: 600 - 48 = 552
-      expect(tableContainer.style.maxHeight).toBe('552px');
-    });
-
-    it('should parse and subtract toolbar height from a string height when showToolbar is true', () => {
-      const { container } = render(
-        <CustomTableSkeleton
-          {...defaultProps}
-          height="400"
-          showToolbar={true}
-        />
-      );
-
-      const tableContainer = container.querySelector(
-        '.cds--data-table-container'
-      );
-      // NOTE: parseInt("400") - 48 = 352
-      expect(tableContainer.style.maxHeight).toBe('352px');
-    });
-
-    it('should apply string height as-is when showToolbar is false', () => {
-      const { container } = render(
-        <CustomTableSkeleton
-          {...defaultProps}
-          height="calc(100vh - 200px)"
-          showToolbar={false}
-        />
+        <CustomTableSkeleton {...defaultProps} height="calc(100vh - 200px)" />
       );
 
       const tableContainer = container.querySelector(

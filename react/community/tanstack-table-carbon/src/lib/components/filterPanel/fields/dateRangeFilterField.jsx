@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { DatePicker, DatePickerInput, Layer } from '@carbon/react';
 import { STANDARD_SIZE_MAP } from '../../../constants/constants';
+import { derivePlaceholderFromDateFormat } from '../../../utils/dateFormatHelpers';
 
 const DateRangeFilterField = ({
   startId,
@@ -13,9 +14,12 @@ const DateRangeFilterField = ({
   disabled = false,
   error,
   size = 'md',
-  placeholder = 'mm/dd/yyyy',
+  placeholder,
+  dateFormat,
   stopPropagation = false,
 }) => {
+  const resolvedPlaceholder = derivePlaceholderFromDateFormat(placeholder, dateFormat);
+
   const content = (
     <Layer level={1}>
       <DatePicker
@@ -26,13 +30,17 @@ const DateRangeFilterField = ({
             onChange({ start: dates[0], end: dates[1] });
             return;
           }
-          onChange(undefined);
+          // Only clear when user explicitly cleared both inputs (empty array),
+          // not when they've picked just the start date (length === 1).
+          if (!dates || dates.length === 0) {
+            onChange(undefined);
+          }
         }}
         disabled={disabled}
-      >
+        {...(dateFormat !== undefined && { dateFormat })}>
         <DatePickerInput
           id={startId}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           labelText={startLabel}
           size={STANDARD_SIZE_MAP[size]}
           invalid={!!error}
@@ -40,7 +48,7 @@ const DateRangeFilterField = ({
         />
         <DatePickerInput
           id={endId}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           labelText={endLabel}
           size={STANDARD_SIZE_MAP[size]}
           invalid={!!error}
@@ -71,6 +79,7 @@ DateRangeFilterField.propTypes = {
   error: PropTypes.string,
   size: PropTypes.string,
   placeholder: PropTypes.string,
+  dateFormat: PropTypes.string,
   stopPropagation: PropTypes.bool,
 };
 

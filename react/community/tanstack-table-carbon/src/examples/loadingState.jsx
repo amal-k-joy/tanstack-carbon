@@ -1,6 +1,6 @@
 import { TanstackTable } from '@/lib';
-import { Add as AddIcon, TableSplit as TableIcon } from '@carbon/icons-react';
-import { Breadcrumb, BreadcrumbItem, Button } from '@carbon/react';
+import { Add as AddIcon } from '@carbon/icons-react';
+import { Button } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 
 const ExampleLoadingState = () => {

@@ -30,6 +30,7 @@ export const useFilterSidePanelController = ({
   const customFilterStateRef = useRef({
     filterValues: {},
     resetFilters: null,
+    isFilterDisabled: null,
     initialized: false,
   });
 
@@ -57,14 +58,19 @@ export const useFilterSidePanelController = ({
 
   const handleCheckboxChange = useCallback(
     (columnId, value, checked) => {
-      setLocalFilters(toggleCheckboxFilterValue(localFilters, columnId, value, checked));
+      setLocalFilters(
+        toggleCheckboxFilterValue(localFilters, columnId, value, checked)
+      );
     },
     [localFilters]
   );
 
   const handleApply = useCallback(() => {
     const nextFilters = cloneFilterPayload(localFilters);
-    const changedFilters = buildDeltaChangedFilters(nextFilters, appliedFiltersRef.current);
+    const changedFilters = buildDeltaChangedFilters(
+      nextFilters,
+      appliedFiltersRef.current
+    );
     appliedFiltersRef.current = cloneFilterPayload(nextFilters);
 
     onApplyFilters(nextFilters);
@@ -91,13 +97,11 @@ export const useFilterSidePanelController = ({
         safePayload,
         appliedCustomFiltersRef.current
       );
-      const payload = {
-        allFilters: safePayload,
-        changedFilters,
-      };
 
       appliedCustomFiltersRef.current = cloneFilterPayload(safePayload);
-      onCustomFiltersApply?.(payload);
+      // NOTE: Primary arg is the flat filterValues object — consumers use it directly.
+      // Second arg carries delta metadata for advanced consumers who need change tracking.
+      onCustomFiltersApply?.(safePayload, { changedFilters });
     },
     [onCustomFiltersApply]
   );
@@ -108,10 +112,8 @@ export const useFilterSidePanelController = ({
       setIsCustomFiltersValid(true);
 
       appliedCustomFiltersRef.current = cloneFilterPayload(safePayload);
-      onCustomFiltersReset?.({
-        allFilters: safePayload,
-        changedFilters: [],
-      });
+      // NOTE: Same pattern — flat filterValues first, metadata second.
+      onCustomFiltersReset?.(safePayload, { changedFilters: [] });
     },
     [onCustomFiltersReset]
   );
@@ -120,25 +122,39 @@ export const useFilterSidePanelController = ({
     setIsCustomFiltersValid(isValid);
   }, []);
 
-  const handleCustomFilterStateChange = useCallback(({ filterValues, resetFilters }) => {
-    const safeFilterValues = cloneFilterPayload(filterValues ?? {});
+  const handleCustomFilterStateChange = useCallback(
+    ({ filterValues, resetFilters, isFilterDisabled }) => {
+      const safeFilterValues = cloneFilterPayload(filterValues ?? {});
 
-    customFilterStateRef.current = {
-      filterValues: safeFilterValues,
-      resetFilters,
-      initialized: true,
-    };
+      customFilterStateRef.current = {
+        filterValues: safeFilterValues,
+        resetFilters,
+        isFilterDisabled: isFilterDisabled ?? null,
+        initialized: true,
+      };
 
-    if (
-      !appliedCustomFiltersRef.current ||
-      Object.keys(appliedCustomFiltersRef.current).length === 0
-    ) {
-      appliedCustomFiltersRef.current = cloneFilterPayload(safeFilterValues);
-    }
-  }, []);
+      if (
+        !appliedCustomFiltersRef.current ||
+        Object.keys(appliedCustomFiltersRef.current).length === 0
+      ) {
+        appliedCustomFiltersRef.current = cloneFilterPayload(safeFilterValues);
+      }
+    },
+    []
+  );
 
   const handleCustomApplyClick = useCallback(() => {
-    handleCustomFilterApply(customFilterStateRef.current.filterValues ?? {});
+    const allValues = customFilterStateRef.current.filterValues ?? {};
+    const isFilterDisabled = customFilterStateRef.current.isFilterDisabled;
+
+    // Strip disabled filter keys so they don't appear in tags or get sent to onApply
+    const activeValues = isFilterDisabled
+      ? Object.fromEntries(
+          Object.entries(allValues).filter(([key]) => !isFilterDisabled(key))
+        )
+      : allValues;
+
+    handleCustomFilterApply(activeValues);
   }, [handleCustomFilterApply]);
 
   const handleCustomClearClick = useCallback(() => {

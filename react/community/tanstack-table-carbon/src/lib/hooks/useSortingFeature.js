@@ -1,4 +1,3 @@
-/* eslint-disable custom/hooks-first */
 import { useState, useEffect, useCallback } from 'react';
 
 export const useSortingFeature = (sortingFeature) => {
@@ -16,7 +15,8 @@ export const useSortingFeature = (sortingFeature) => {
 
   const handleSortingChange = useCallback(
     (updater) => {
-      const nextSorting = typeof updater === 'function' ? updater(sorting) : updater;
+      const nextSorting =
+        typeof updater === 'function' ? updater(sorting) : updater;
 
       if (isControlledSorting) {
         onChange(nextSorting);

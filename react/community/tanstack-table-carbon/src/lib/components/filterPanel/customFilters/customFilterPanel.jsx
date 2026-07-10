@@ -35,8 +35,9 @@ const CustomFilterPanel = ({
     onStateChange?.({
       filterValues,
       resetFilters,
+      isFilterDisabled,
     });
-  }, [filterValues, resetFilters, onStateChange]);
+  }, [filterValues, resetFilters, isFilterDisabled, onStateChange]);
 
   // NOTE: Helper function to check if a filter matches the search term
   const matchesFilter = useMemo(() => {
@@ -47,11 +48,18 @@ const CustomFilterPanel = ({
       }
 
       // NOTE: Search through options for select-based filter types
-      const searchableFilterTypes = ['checkbox', 'dropdown', 'radio', 'multiselect'];
+      const searchableFilterTypes = [
+        'checkbox',
+        'dropdown',
+        'radio',
+        'multiselect',
+      ];
       if (searchableFilterTypes.includes(filter.type) && filter.options) {
         return filter.options.some((option) => {
-          const optionLabel = typeof option === 'object' ? option.label : option;
-          const optionValue = typeof option === 'object' ? option.value : option;
+          const optionLabel =
+            typeof option === 'object' ? option.label : option;
+          const optionValue =
+            typeof option === 'object' ? option.value : option;
           return (
             String(optionLabel).toLowerCase().includes(term) ||
             String(optionValue).toLowerCase().includes(term)
@@ -75,7 +83,8 @@ const CustomFilterPanel = ({
       .map((item) => {
         if (item.type === 'section') {
           // NOTE: Check if section label/title matches
-          const sectionMatches = item.label && item.label.toLowerCase().includes(term);
+          const sectionMatches =
+            item.label && item.label.toLowerCase().includes(term);
 
           if (sectionMatches) {
             // NOTE: If section title matches, include all filters and mark it
@@ -83,7 +92,9 @@ const CustomFilterPanel = ({
           }
 
           // NOTE: Filter section's filters
-          const filteredFilters = item.filters.filter((filter) => matchesFilter(filter, term));
+          const filteredFilters = item.filters.filter((filter) =>
+            matchesFilter(filter, term)
+          );
           if (filteredFilters.length > 0) {
             return { ...item, _sectionTitleMatched: false };
           }
@@ -149,8 +160,10 @@ const CustomFilterPanel = ({
         const sectionFilters = item._sectionTitleMatched
           ? item.filters
           : searchTerm
-            ? item.filters.filter((filter) => matchesFilter(filter, searchTerm.toLowerCase()))
-            : item.filters;
+          ? item.filters.filter((filter) =>
+              matchesFilter(filter, searchTerm.toLowerCase())
+            )
+          : item.filters;
 
         if (sectionFilters.length === 0) {
           return null;
@@ -162,7 +175,9 @@ const CustomFilterPanel = ({
         return (
           <div key={item.id} className={styles.customFilterSection}>
             <FilterSection section={item} defaultOpen={item.defaultOpen}>
-              {sectionFilters.map((filter) => renderFilter(filter, filterSearchTerm))}
+              {sectionFilters.map((filter) =>
+                renderFilter(filter, filterSearchTerm)
+              )}
             </FilterSection>
           </div>
         );
@@ -171,7 +186,9 @@ const CustomFilterPanel = ({
       // NOTE: Render standalone filter
       return (
         <div key={item.id} className={styles.customFilterSection}>
-          <div className={styles.customWithoutAcc}>{renderFilter(item, searchTerm)}</div>
+          <div className={styles.customWithoutAcc}>
+            {renderFilter(item, searchTerm)}
+          </div>
         </div>
       );
     });

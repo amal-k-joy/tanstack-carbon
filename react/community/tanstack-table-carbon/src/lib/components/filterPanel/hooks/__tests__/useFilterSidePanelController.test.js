@@ -35,7 +35,9 @@ describe('useFilterSidePanelController', () => {
     useApplyScenario().handleApply();
     useApplyScenario().handleClearAll();
 
-    expect(onApplyFilters).toHaveBeenCalledWith([{ id: 'status', value: 'active' }]);
+    expect(onApplyFilters).toHaveBeenCalledWith([
+      { id: 'status', value: 'active' },
+    ]);
     expect(onClearFilters).toHaveBeenCalledTimes(1);
     expect(onSidePanelApply).toHaveBeenCalledWith({
       changedFilters: [{ id: 'status', value: 'active' }],
@@ -70,19 +72,21 @@ describe('useFilterSidePanelController', () => {
     useCustomScenario().handleCustomFilterReset();
     useCustomScenario().handleValidationChange(false);
 
-    expect(onCustomFiltersApply).toHaveBeenCalledWith({
-      allFilters: { owner: 'team-a' },
-      changedFilters: [{ id: 'owner', value: 'team-a' }],
-    });
-    expect(onCustomFiltersApply).toHaveBeenNthCalledWith(2, {
-      allFilters: {},
-      changedFilters: [],
-    });
+    expect(onCustomFiltersApply).toHaveBeenCalledWith(
+      { owner: 'team-a' },
+      { changedFilters: [{ id: 'owner', value: 'team-a' }] }
+    );
+    expect(onCustomFiltersApply).toHaveBeenNthCalledWith(
+      2,
+      {},
+      { changedFilters: [] }
+    );
     expect(resetFilters).toHaveBeenCalledTimes(0);
-    expect(onCustomFiltersReset).toHaveBeenNthCalledWith(1, {
-      allFilters: {},
-      changedFilters: [],
-    });
+    expect(onCustomFiltersReset).toHaveBeenNthCalledWith(
+      1,
+      {},
+      { changedFilters: [] }
+    );
 
     function useOptionalScenario() {
       return useFilterSidePanelController({

@@ -1,4 +1,3 @@
-/* eslint-disable max-lines-per-function */
 import { useEffect, useState } from 'react';
 import { TanstackTable, TableOverflowMenu } from '@/lib';
 import {
@@ -8,11 +7,8 @@ import {
   Renew,
   ChevronUp,
   ChevronDown,
-  TableSplit as TableIcon,
 } from '@carbon/icons-react';
 import {
-  Breadcrumb,
-  BreadcrumbItem,
   Button,
   Tag,
   Dropdown,
@@ -148,7 +144,7 @@ const MixTable = ({ toggleHeaderContent, isHeaderContentVisible }) => {
       await new Promise((resolve) => setTimeout(resolve, 3500));
 
       // Generate mock data
-      const data = generateMockData(50).sort((a, b) =>
+      const data = generateMockData(10000).sort((a, b) =>
         a.userId.localeCompare(b.userId)
       );
       setTableData(data);
@@ -340,29 +336,51 @@ const MixTable = ({ toggleHeaderContent, isHeaderContentVisible }) => {
     },
     {
       accessorKey: 'joinDate',
+      // accessorFn returns the formatted display string so TanStack's built-in
+      // includesString globalFilterFn can match "jan", "2022", etc.
+      // The dateRange filterFn in columnHelpers reads row.original.joinDate
+      // (the raw ISO string) so side-panel date filtering is unaffected.
+      accessorFn: (row) => formatJoinDateForDisplay(row.joinDate),
+      // ISO strings ("2022-01-15") sort lexicographically = chronologically,
+      // so read raw value from row.original to sort correctly.
+      sortingFn: (rowA, rowB) =>
+        (rowA.original.joinDate ?? '').localeCompare(
+          rowB.original.joinDate ?? ''
+        ),
       header: 'Join Date',
       enableSorting: true,
       enableColumnFilter: true,
       meta: {
         filterVariant: 'dateRange',
+        dateFormat: 'Y-m-d',
         editable: true,
         editableType: 'date',
       },
-      cell: ({ getValue }) => formatJoinDateForDisplay(getValue()),
+      cell: ({ getValue }) => getValue(),
       size: 150,
     },
     {
       accessorKey: 'resignDate',
+      // accessorFn returns the formatted display string for global search.
+      // The date filterFn in columnHelpers reads row.original.resignDate
+      // (the raw ISO string) so side-panel date filtering is unaffected.
+      accessorFn: (row) => {
+        return row.resignDate ? formatJoinDateForDisplay(row.resignDate) : '-';
+      },
+      // ISO strings sort lexicographically = chronologically.
+      // Null resignDates sort to the end in both directions.
+      sortingFn: (rowA, rowB) => {
+        const a = rowA.original.resignDate ?? '';
+        const b = rowB.original.resignDate ?? '';
+        return a.localeCompare(b);
+      },
       header: 'Resign Date',
       enableSorting: true,
       enableColumnFilter: true,
       meta: {
         filterVariant: 'date',
       },
-      cell: ({ getValue }) => {
-        const value = getValue();
-        return value ? formatJoinDateForDisplay(value) : '-';
-      },
+      cell: ({ getValue }) => getValue(),
       size: 150,
     },
     {

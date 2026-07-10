@@ -55,13 +55,19 @@ export const getTanstackTableRowModels = ({
   getCoreRowModel: getCoreRowModel(),
   getSortedRowModel: isServerSideSorting ? undefined : getSortedRowModel(),
   getFilteredRowModel:
-    isServerSideFiltering || isServerSideSearch ? undefined : getFilteredRowModel(),
+    isServerSideFiltering || isServerSideSearch
+      ? undefined
+      : getFilteredRowModel(),
   getPaginationRowModel:
     enableVirtualization || isServerSidePagination || !paginationEnabled
       ? undefined
       : getPaginationRowModel(),
-  getExpandedRowModel: isRowExpansionEnabled ? getExpandedRowModel() : undefined,
-  getFacetedUniqueValues: enableFilterSidePanel ? getFacetedUniqueValues() : undefined,
+  getExpandedRowModel: isRowExpansionEnabled
+    ? getExpandedRowModel()
+    : undefined,
+  getFacetedUniqueValues: enableFilterSidePanel
+    ? getFacetedUniqueValues()
+    : undefined,
 });
 
 export const getTanstackTableHandlers = ({
@@ -104,13 +110,16 @@ export const getTanstackTableManualOptions = ({
   manualPagination,
   manualSorting: isServerSideSorting,
   manualFiltering: isServerSideFiltering || isServerSideSearch,
-  pageCount: isServerSidePagination ? (pagination?.pageCount ?? -1) : undefined,
-  rowCount: isServerSidePagination ? (pagination?.rowCount ?? 0) : undefined,
+  pageCount: isServerSidePagination ? pagination?.pageCount ?? -1 : undefined,
+  rowCount: isServerSidePagination ? pagination?.rowCount ?? 0 : undefined,
   enableSortingRemoval: true,
   sortDescFirst: false,
 });
 
-export const getTanstackTableInitialState = ({ enableStickyColumns, columnPinning }) => {
+export const getTanstackTableInitialState = ({
+  enableStickyColumns,
+  columnPinning,
+}) => {
   if (!enableStickyColumns || !columnPinning) {
     return undefined;
   }
@@ -126,13 +135,16 @@ export const getEditableTableMeta = ({ enableEditableCells, onDataChange }) => {
   }
 
   return {
-    updateData: (rowIndex, columnId, value) => {
+    // NOTE: rowOriginal is the actual data object reference from row.original.
+    // Using the reference (not a positional index) ensures the correct row is
+    // updated even when the table is sorted or filtered.
+    updateData: (rowOriginal, columnId, value) => {
       if (onDataChange) {
         onDataChange((old) =>
-          old.map((row, index) => {
-            if (index === rowIndex) {
+          old.map((row) => {
+            if (row === rowOriginal) {
               return {
-                ...old[rowIndex],
+                ...row,
                 [columnId]: value,
               };
             }

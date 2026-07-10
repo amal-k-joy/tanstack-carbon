@@ -3,11 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import EditableCell from '../editableCell';
 
-const mockTableCell = vi.fn(({ children, id, onKeyDown, onDoubleClick, ...rest }) => (
-  <td id={id} onKeyDown={onKeyDown} onDoubleClick={onDoubleClick} {...rest}>
-    {children}
-  </td>
-));
+const mockTableCell = vi.fn(
+  ({ children, id, onKeyDown, onDoubleClick, ...rest }) => (
+    <td id={id} onKeyDown={onKeyDown} onDoubleClick={onDoubleClick} {...rest}>
+      {children}
+    </td>
+  )
+);
 
 const mockTextInput = vi.fn(
   ({
@@ -99,7 +101,7 @@ describe('EditableCell', () => {
     };
 
     cell = {
-      row: { index: 0 },
+      row: { index: 0, original: { name: 'John Doe' } },
       column: {
         id: 'name',
         columnDef: {
@@ -165,7 +167,11 @@ describe('EditableCell', () => {
     fireEvent.change(input, { target: { value: 'Jane Doe' } });
     fireEvent.keyDown(input, { code: 'Enter' });
 
-    expect(updateData).toHaveBeenCalledWith(0, 'name', 'Jane Doe');
+    expect(updateData).toHaveBeenCalledWith(
+      { name: 'John Doe' },
+      'name',
+      'Jane Doe'
+    );
     expect(setEditingId).toHaveBeenCalledWith(null);
 
     vi.advanceTimersByTime(10);
@@ -182,7 +188,11 @@ describe('EditableCell', () => {
     const input = screen.getByLabelText('Editable cell');
     fireEvent.keyDown(input, { code: 'Enter' });
 
-    expect(updateData).toHaveBeenCalledWith(0, 'name', 'John Doe');
+    expect(updateData).toHaveBeenCalledWith(
+      { name: 'John Doe' },
+      'name',
+      'John Doe'
+    );
     expect(setEditingId).toHaveBeenCalledWith(null);
   });
 
@@ -290,7 +300,11 @@ describe('EditableCell', () => {
     fireEvent.change(input, { target: { value: 'Saved on blur' } });
     fireEvent.blur(input);
 
-    expect(updateData).toHaveBeenCalledWith(0, 'name', 'Saved on blur');
+    expect(updateData).toHaveBeenCalledWith(
+      { name: 'John Doe' },
+      'name',
+      'Saved on blur'
+    );
     expect(setEditingId).toHaveBeenCalledWith(null);
   });
 

@@ -1,17 +1,7 @@
 import { useMemo, useState } from 'react';
 import { TanstackTable } from '@/lib';
-import {
-  TableSplit as TableIcon,
-  TrashCan,
-  Download,
-  Edit,
-} from '@carbon/icons-react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  RadioButtonGroup,
-  RadioButton,
-} from '@carbon/react';
+import { TrashCan, Download, Edit } from '@carbon/icons-react';
+import { RadioButtonGroup, RadioButton } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 import styles from './scss/virtualization.module.scss';
 

@@ -11,8 +11,17 @@ import styles from './columnHelpers.module.scss';
 export const createSelectionColumn = (isCheckbox, isRadio, tableId) => ({
   id: 'select',
   size: 48,
-  header: ({ table }) => <SelectionHeader table={table} isCheckbox={isCheckbox} tableId={tableId} />,
-  cell: ({ row }) => <SelectionCell row={row} isCheckbox={isCheckbox} isRadio={isRadio} tableId={tableId} />,
+  header: ({ table }) => (
+    <SelectionHeader table={table} isCheckbox={isCheckbox} tableId={tableId} />
+  ),
+  cell: ({ row }) => (
+    <SelectionCell
+      row={row}
+      isCheckbox={isCheckbox}
+      isRadio={isRadio}
+      tableId={tableId}
+    />
+  ),
   enableSorting: false,
   enableColumnFilter: false,
 });
@@ -24,18 +33,23 @@ export const createSelectionColumn = (isCheckbox, isRadio, tableId) => ({
  * @param {boolean} isAllExpanded - Whether all rows are expanded
  * @returns {Object} Column definition
  */
-export const createExpandColumn = (toggleRow, toggleAllRows, isAllExpanded) => ({
+export const createExpandColumn = (
+  toggleRow,
+  toggleAllRows,
+  isAllExpanded
+) => ({
   id: 'expand',
   size: 48,
   header: () => (
     <button
       onClick={toggleAllRows}
       className={styles.expandButton}
-      aria-label={isAllExpanded ? 'Collapse all rows' : 'Expand all rows'}
-    >
+      aria-label={isAllExpanded ? 'Collapse all rows' : 'Expand all rows'}>
       <ChevronRight
         size={16}
-        className={`${styles.expandIcon} ${isAllExpanded ? styles.expandIconExpanded : styles.expandIconCollapsed}`}
+        className={`${styles.expandIcon} ${
+          isAllExpanded ? styles.expandIconExpanded : styles.expandIconCollapsed
+        }`}
       />
     </button>
   ),
@@ -43,11 +57,14 @@ export const createExpandColumn = (toggleRow, toggleAllRows, isAllExpanded) => (
     <button
       onClick={() => toggleRow(row.id)}
       className={styles.expandButton}
-      aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}
-    >
+      aria-label={row.getIsExpanded() ? 'Collapse row' : 'Expand row'}>
       <ChevronRight
         size={16}
-        className={`${styles.expandIcon} ${row.getIsExpanded() ? styles.expandIconExpanded : styles.expandIconCollapsed}`}
+        className={`${styles.expandIcon} ${
+          row.getIsExpanded()
+            ? styles.expandIconExpanded
+            : styles.expandIconCollapsed
+        }`}
       />
     </button>
   ),
@@ -63,13 +80,22 @@ export const createExpandColumn = (toggleRow, toggleAllRows, isAllExpanded) => (
  * @param {boolean} hasSelection - Whether selection column exists
  * @returns {Array} Columns with expand column if needed
  */
-export const addExpandColumn = (columns, expansion, position = 'first', hasSelection = false) => {
+export const addExpandColumn = (
+  columns,
+  expansion,
+  position = 'first',
+  hasSelection = false
+) => {
   if (!expansion) {
     return columns;
   }
 
   const { toggleRow, toggleAllRows, isAllExpanded } = expansion;
-  const expandColumn = createExpandColumn(toggleRow, toggleAllRows, isAllExpanded);
+  const expandColumn = createExpandColumn(
+    toggleRow,
+    toggleAllRows,
+    isAllExpanded
+  );
 
   if (position === 'last') {
     // NOTE: Add expand column at the end
@@ -96,7 +122,107 @@ export const enhanceColumnsWithSmartFiltering = (columns) => {
       return column;
     }
 
-    // NOTE: If column has a cell formatter, add smart filtering
+    const filterVariant = column.meta?.filterVariant;
+
+    // NOTE: Date range filter — filterValue is { start: Date, end: Date } from Carbon DatePicker.
+    // Raw value is read from row.original[accessorKey] — supports plain ISO dates ("2024-03-15")
+    // and full ISO timestamps ("2024-03-15T00:00:00+00:00"). split('T')[0] strips the time/
+    // timezone component before parsing so the local calendar date is always used correctly.
+    if (filterVariant === 'dateRange') {
+      return {
+        ...column,
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue || (!filterValue.start && !filterValue.end)) {
+            return true;
+          }
+          const accessorKey = column.accessorKey ?? columnId;
+          const raw = row.original[accessorKey];
+          if (!raw) {
+            return false;
+          }
+          const [y, m, d] = String(raw).split('T')[0].split('-').map(Number);
+          const rowTime = new Date(y, m - 1, d).getTime();
+          const startTime = filterValue.start
+            ? new Date(filterValue.start).setHours(0, 0, 0, 0)
+            : -Infinity;
+          const endTime = filterValue.end
+            ? new Date(filterValue.end).setHours(23, 59, 59, 999)
+            : Infinity;
+          return rowTime >= startTime && rowTime <= endTime;
+        },
+      };
+    }
+
+    // NOTE: Single date filter — filterValue is a Date object from Carbon DatePicker.
+    // Raw value is read from row.original[accessorKey] — supports plain ISO dates ("2024-03-15")
+    // and full ISO timestamps ("2024-03-15T00:00:00+00:00"). split('T')[0] strips the time/
+    // timezone component before parsing so the local calendar date is always used correctly.
+    if (filterVariant === 'date') {
+      return {
+        ...column,
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) {
+            return true;
+          }
+          const accessorKey = column.accessorKey ?? columnId;
+          const raw = row.original[accessorKey];
+          if (!raw) {
+            return false;
+          }
+          const [y, m, d] = String(raw).split('T')[0].split('-').map(Number);
+          const rowTime = new Date(y, m - 1, d).setHours(0, 0, 0, 0);
+          const filterTime = new Date(filterValue).setHours(0, 0, 0, 0);
+          return rowTime === filterTime;
+        },
+      };
+    }
+
+    // NOTE: Slider filter — filterValue is { min, max }.
+    // Raw column value is a number. Pass if min <= value <= max.
+    if (filterVariant === 'slider') {
+      return {
+        ...column,
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) {
+            return true;
+          }
+          const raw = Number(row.getValue(columnId));
+          if (isNaN(raw)) {
+            return true;
+          }
+          const min =
+            filterValue.min !== undefined ? Number(filterValue.min) : -Infinity;
+          const max =
+            filterValue.max !== undefined ? Number(filterValue.max) : Infinity;
+          return raw >= min && raw <= max;
+        },
+      };
+    }
+
+    // NOTE: Time filter — filterValue is a string like "09:30 AM".
+    // Raw column value is typically "09:30" (HH:MM, no period).
+    // Match if the raw value is contained within the filter string or vice-versa.
+    if (filterVariant === 'time') {
+      return {
+        ...column,
+        filterFn: (row, columnId, filterValue) => {
+          if (!filterValue) {
+            return true;
+          }
+          const raw = String(row.getValue(columnId) ?? '')
+            .toLowerCase()
+            .trim();
+          const filter = String(filterValue).toLowerCase().trim();
+          if (!raw) {
+            return false;
+          }
+          return filter.includes(raw) || raw.includes(filter);
+        },
+      };
+    }
+
+    // NOTE: For columns with a cell formatter — add smart filtering that searches
+    // both the raw value and the formatted string value (if cell returns a string).
     if (column.cell && typeof column.cell === 'function') {
       return {
         ...column,
@@ -104,29 +230,23 @@ export const enhanceColumnsWithSmartFiltering = (columns) => {
           const rawValue = row.getValue(columnId);
           const searchTerm = String(filterValue).toLowerCase();
 
-          // NOTE: Search in raw value
           if (String(rawValue).toLowerCase().includes(searchTerm)) {
             return true;
           }
 
-          // NOTE: Try to get the formatted/displayed value
           try {
-            // NOTE: Create a minimal mock for getValue to get formatted value
-            const mockGetValue = () => rawValue;
-            const formattedValue = column.cell({ getValue: mockGetValue, row });
-
-            // NOTE: If formatted value is a React element, try to extract text content
+            const formattedValue = column.cell({
+              getValue: () => rawValue,
+              row,
+            });
             if (formattedValue && typeof formattedValue === 'object') {
-              // NOTE: For React elements, we can't easily extract text, so skip
               return false;
             }
-
-            // NOTE: Search in formatted value if it's a string
             if (formattedValue && typeof formattedValue === 'string') {
               return formattedValue.toLowerCase().includes(searchTerm);
             }
           } catch {
-            // NOTE: If formatting fails, just use raw value (already checked above)
+            // ignore
           }
 
           return false;

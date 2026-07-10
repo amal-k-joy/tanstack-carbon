@@ -39,6 +39,7 @@ export const getTanstackFilterPanelProps = ({
   customFilters,
   sideFilterOnApply,
   sideFilterOnReset,
+  hideSearch,
 }) => ({
   open: filterPanel.showFilterPanel,
   onClose: filterPanel.closeFilterPanel,
@@ -54,6 +55,7 @@ export const getTanstackFilterPanelProps = ({
   onCustomFiltersReset: customFilters?.onReset,
   onSidePanelApply: sideFilterOnApply,
   onSidePanelReset: sideFilterOnReset,
+  hideSearch,
 });
 
 export const getTanstackTableContentStyle = ({
@@ -71,11 +73,17 @@ export const getTanstackFilterTagsProps = ({
   handleRemoveFilter,
   handleClearAllFilters,
   table,
+  appliedCustomFilters,
+  onRemoveCustomFilter,
+  onClearCustomFilters,
 }) => ({
   columnFilters,
   onRemoveFilter: handleRemoveFilter,
   onClearAll: handleClearAllFilters,
   table,
+  appliedCustomFilters,
+  onRemoveCustomFilter,
+  onClearCustomFilters,
 });
 
 export const getTanstackTableProps = ({
@@ -209,7 +217,6 @@ export const getSkeletonProps = ({
   initialPageSize,
   useZebraStyles,
   showPagination,
-  showToolbar,
   height,
 }) => {
   return {
@@ -218,7 +225,6 @@ export const getSkeletonProps = ({
     tableSize,
     useZebraStyles,
     showPagination,
-    showToolbar,
     height,
   };
 };

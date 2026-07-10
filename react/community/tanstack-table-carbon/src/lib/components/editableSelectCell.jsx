@@ -48,12 +48,17 @@ const EditableSelectCell = ({
 
       const dropdownRect = dropdownNode.getBoundingClientRect();
       const containerRect = scrollContainer.getBoundingClientRect();
-      const estimatedMenuHeight = Math.min(Math.max(options.length, 1) * 40 + 16, 240);
+      const estimatedMenuHeight = Math.min(
+        Math.max(options.length, 1) * 40 + 16,
+        240
+      );
       const availableBelow = containerRect.bottom - dropdownRect.bottom;
       const availableAbove = dropdownRect.top - containerRect.top;
 
       setDropdownDirection(
-        availableBelow < estimatedMenuHeight && availableAbove > availableBelow ? 'top' : 'bottom'
+        availableBelow < estimatedMenuHeight && availableAbove > availableBelow
+          ? 'top'
+          : 'bottom'
       );
     };
 
@@ -79,7 +84,9 @@ const EditableSelectCell = ({
 
       // NOTE: Auto-focus and open dropdown after entering edit mode so keyboard navigation works
       setTimeout(() => {
-        const button = dropdownRef.current?.querySelector('.cds--list-box__field');
+        const button = dropdownRef.current?.querySelector(
+          '.cds--list-box__field'
+        );
         if (button) {
           button.focus();
           button.click();
@@ -96,7 +103,9 @@ const EditableSelectCell = ({
         event.stopPropagation();
         setEditingId(null);
         setTimeout(() => {
-          const activeCell = tableContainerRef?.current?.querySelector(`#cell__${id}`);
+          const activeCell = tableContainerRef?.current?.querySelector(
+            `#cell__${id}`
+          );
           if (activeCell) {
             activeCell.tabIndex = 0;
             activeCell.focus();
@@ -128,11 +137,17 @@ const EditableSelectCell = ({
     ({ selectedItem }) => {
       if (selectedItem) {
         const value = selectedItem.id || selectedItem;
-        table.options.meta?.updateData(cell.row.index, cell.column.id, value);
+        table.options.meta?.updateData(
+          cell.row.original,
+          cell.column.id,
+          value
+        );
         setEditingId(null);
         // NOTE: Refocus the cell after saving
         setTimeout(() => {
-          const activeCell = tableContainerRef?.current?.querySelector(`#cell__${id}`);
+          const activeCell = tableContainerRef?.current?.querySelector(
+            `#cell__${id}`
+          );
           if (activeCell) {
             activeCell.tabIndex = 0;
             activeCell.focus();
@@ -140,7 +155,14 @@ const EditableSelectCell = ({
         }, 10);
       }
     },
-    [table.options.meta, cell.row.index, cell.column.id, setEditingId, tableContainerRef, id]
+    [
+      table.options.meta,
+      cell.row.index,
+      cell.column.id,
+      setEditingId,
+      tableContainerRef,
+      id,
+    ]
   );
 
   const { style } = rest;
@@ -151,15 +173,16 @@ const EditableSelectCell = ({
       className={styles.editingCell}
       style={{
         width: style?.width,
-      }}
-    >
+      }}>
       <div ref={dropdownRef} onKeyDownCapture={handleKeyDownCapture}>
         <Dropdown
           className={styles.editableCellDropdown}
           id={`dropdown__${id}`}
           titleText=""
           label={currentValue}
-          items={options.map((opt) => (typeof opt === 'string' ? { id: opt, label: opt } : opt))}
+          items={options.map((opt) =>
+            typeof opt === 'string' ? { id: opt, label: opt } : opt
+          )}
           itemToString={(item) => (item ? item.label || item.id : '')}
           selectedItem={
             typeof currentValue === 'string'
@@ -178,8 +201,7 @@ const EditableSelectCell = ({
       onKeyDown={handleEditableCellKeyDown}
       onDoubleClick={handleDoubleClick}
       className={styles['editable-cell']}
-      {...rest}
-    >
+      {...rest}>
       <div className={styles.editableCellContent}>
         {children}
         <Edit size={16} className={styles.editableCellIcon} />

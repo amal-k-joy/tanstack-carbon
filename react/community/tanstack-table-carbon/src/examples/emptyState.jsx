@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import { TanstackTable } from '@/lib';
-import {
-  Add as AddIcon,
-  Folder,
-  TableSplit as TableIcon,
-} from '@carbon/icons-react';
-import { Breadcrumb, BreadcrumbItem, Button, Toggle } from '@carbon/react';
+import { Add as AddIcon, Folder } from '@carbon/icons-react';
+import { Button, Toggle } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 import styles from './scss/emptyState.module.scss';
 

@@ -41,7 +41,9 @@ export const getEditingFeatureConfig = (editingFeature = null) => ({
   onDataChange: editingFeature?.onDataChange,
 });
 
-export const getSideFilterPanelFeatureConfig = (sideFilterPanelFeature = null) => {
+export const getSideFilterPanelFeatureConfig = (
+  sideFilterPanelFeature = null
+) => {
   const hasCustomConfig = !!sideFilterPanelFeature?.config;
 
   return {
@@ -52,6 +54,7 @@ export const getSideFilterPanelFeatureConfig = (sideFilterPanelFeature = null) =
     onApply: sideFilterPanelFeature?.onApply,
     onReset: sideFilterPanelFeature?.onReset,
     customFilters: hasCustomConfig ? sideFilterPanelFeature : null,
+    hideSearch: sideFilterPanelFeature?.hideSearch ?? false,
   };
 };
 
@@ -60,7 +63,9 @@ export const getSearchFeatureConfig = (searchFeature = null) => ({
   debounceDelay: searchFeature?.debounceDelay ?? 500,
 });
 
-export const getColumnSettingsFeatureConfig = (columnSettingsFeature = null) => ({
+export const getColumnSettingsFeatureConfig = (
+  columnSettingsFeature = null
+) => ({
   visibility: columnSettingsFeature?.visibility,
   order: columnSettingsFeature?.order,
   onVisibilityChange: columnSettingsFeature?.onVisibilityChange,
@@ -78,7 +83,10 @@ export const getTableModeFlags = ({
   const isServerSidePagination = !!paginationOnChange;
   const isServerSideFiltering = hasCustomSideFilterConfig;
   const isServerSideTable =
-    isServerSideSearch || sortingServerSide || isServerSidePagination || isServerSideFiltering;
+    isServerSideSearch ||
+    sortingServerSide ||
+    isServerSidePagination ||
+    isServerSideFiltering;
 
   return {
     isServerSideSearch,
@@ -89,7 +97,8 @@ export const getTableModeFlags = ({
 };
 
 export const getToolbarFeatureFlags = (toolbar = null) => ({
-  enableFilterSidePanel: toolbar?.some((item) => item.type === 'filter') ?? false,
+  enableFilterSidePanel:
+    toolbar?.some((item) => item.type === 'filter') ?? false,
   enableCustomizeColumn:
     toolbar?.some(
       (item) =>
@@ -101,7 +110,8 @@ export const getToolbarFeatureFlags = (toolbar = null) => ({
 export const getStickyColumnConfig = (columnPinning = null) => ({
   enableStickyColumns:
     !!columnPinning &&
-    ((columnPinning.left?.length ?? 0) > 0 || (columnPinning.right?.length ?? 0) > 0),
+    ((columnPinning.left?.length ?? 0) > 0 ||
+      (columnPinning.right?.length ?? 0) > 0),
 });
 
 export const getEmptyStateConfig = (emptyState = DEFAULT_EMPTY_STATE) => {

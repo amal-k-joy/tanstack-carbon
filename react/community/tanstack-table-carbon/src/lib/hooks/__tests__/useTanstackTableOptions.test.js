@@ -57,7 +57,11 @@ describe('useTanstackTableOptions helpers', () => {
       setColumnVisibility: vi.fn(),
       setColumnOrder: vi.fn(),
       handleColumnFiltersChange: vi.fn(),
-      selection: { enableSelection: false, isCheckbox: false, setRowSelection: vi.fn() },
+      selection: {
+        enableSelection: false,
+        isCheckbox: false,
+        setRowSelection: vi.fn(),
+      },
       isRowExpansionEnabled: false,
       expansion: { setExpanded: vi.fn() },
     });
@@ -215,10 +219,11 @@ describe('useTanstackTableOptions helpers', () => {
       onDataChange,
     });
 
-    meta.updateData(1, 'name', 'updated');
+    const rowToUpdate = { name: 'row-1', age: 30 };
+    meta.updateData(rowToUpdate, 'name', 'updated');
 
     const updater = onDataChange.mock.calls[0][0];
-    expect(updater([{ name: 'row-0' }, { name: 'row-1', age: 30 }])).toEqual([
+    expect(updater([{ name: 'row-0' }, rowToUpdate])).toEqual([
       { name: 'row-0' },
       { name: 'updated', age: 30 },
     ]);

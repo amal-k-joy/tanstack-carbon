@@ -3,36 +3,41 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DateRangeFilterField from '../dateRangeFilterField';
 
-const mockDatePicker = vi.fn(({ children, onChange, value, disabled, datePickerType }) => (
-  <div
-    data-testid="mock-date-picker"
-    data-value={JSON.stringify(value)}
-    data-disabled={String(Boolean(disabled))}
-    data-picker-type={datePickerType}
-  >
-    <button type="button" onClick={() => onChange(['2026-05-01', '2026-05-31'])}>
-      Trigger Full Range
-    </button>
-    <button type="button" onClick={() => onChange(['2026-05-01'])}>
-      Trigger Partial Range
-    </button>
-    {children}
-  </div>
-));
+const mockDatePicker = vi.fn(
+  ({ children, onChange, value, disabled, datePickerType, dateFormat }) => (
+    <div
+      data-testid="mock-date-picker"
+      data-value={JSON.stringify(value)}
+      data-disabled={String(Boolean(disabled))}
+      data-picker-type={datePickerType}
+      data-date-format={dateFormat || ''}>
+      <button
+        type="button"
+        onClick={() => onChange(['2026-05-01', '2026-05-31'])}>
+        Trigger Full Range
+      </button>
+      <button type="button" onClick={() => onChange(['2026-05-01'])}>
+        Trigger Partial Range
+      </button>
+      {children}
+    </div>
+  )
+);
 
-const mockDatePickerInput = vi.fn(({ id, placeholder, labelText, size, invalid, invalidText }) => (
-  <div
-    data-testid={`mock-date-picker-input-${id}`}
-    data-id={id}
-    data-placeholder={placeholder}
-    data-label={labelText}
-    data-size={size}
-    data-invalid={String(Boolean(invalid))}
-    data-invalid-text={invalidText || ''}
-  >
-    {labelText}
-  </div>
-));
+const mockDatePickerInput = vi.fn(
+  ({ id, placeholder, labelText, size, invalid, invalidText }) => (
+    <div
+      data-testid={`mock-date-picker-input-${id}`}
+      data-id={id}
+      data-placeholder={placeholder}
+      data-label={labelText}
+      data-size={size}
+      data-invalid={String(Boolean(invalid))}
+      data-invalid-text={invalidText || ''}>
+      {labelText}
+    </div>
+  )
+);
 
 const mockLayer = vi.fn(({ children, level }) => (
   <div data-testid="mock-layer" data-level={String(level)}>
@@ -65,28 +70,30 @@ describe('DateRangeFilterField', () => {
     );
 
     expect(screen.getByTestId('mock-layer')).toHaveAttribute('data-level', '1');
-    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute('data-picker-type', 'range');
+    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute(
+      'data-picker-type',
+      'range'
+    );
     expect(screen.getByTestId('mock-date-picker')).toHaveAttribute(
       'data-value',
       JSON.stringify(['2026-01-01', '2026-01-31'])
     );
-    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute('data-disabled', 'false');
-    expect(screen.getByTestId('mock-date-picker-input-created-start')).toHaveAttribute(
-      'data-label',
-      'Start date'
+    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute(
+      'data-disabled',
+      'false'
     );
-    expect(screen.getByTestId('mock-date-picker-input-created-end')).toHaveAttribute(
-      'data-label',
-      'End date'
-    );
-    expect(screen.getByTestId('mock-date-picker-input-created-start')).toHaveAttribute(
-      'data-placeholder',
-      'mm/dd/yyyy'
-    );
-    expect(screen.getByTestId('mock-date-picker-input-created-start')).toHaveAttribute(
-      'data-size',
-      'md'
-    );
+    expect(
+      screen.getByTestId('mock-date-picker-input-created-start')
+    ).toHaveAttribute('data-label', 'Start date');
+    expect(
+      screen.getByTestId('mock-date-picker-input-created-end')
+    ).toHaveAttribute('data-label', 'End date');
+    expect(
+      screen.getByTestId('mock-date-picker-input-created-start')
+    ).toHaveAttribute('data-placeholder', 'mm/dd/yyyy');
+    expect(
+      screen.getByTestId('mock-date-picker-input-created-start')
+    ).toHaveAttribute('data-size', 'md');
   });
 
   it('renders with custom end label, placeholder, size, disabled, and error state', () => {
@@ -105,34 +112,31 @@ describe('DateRangeFilterField', () => {
       />
     );
 
-    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute('data-disabled', 'true');
-    expect(screen.getByTestId('mock-date-picker-input-updated-start')).toHaveAttribute(
-      'data-label',
-      'Updated from'
-    );
-    expect(screen.getByTestId('mock-date-picker-input-updated-end')).toHaveAttribute(
-      'data-label',
-      'Updated to'
-    );
-    expect(screen.getByTestId('mock-date-picker-input-updated-start')).toHaveAttribute(
-      'data-placeholder',
-      'Select range'
-    );
-    expect(screen.getByTestId('mock-date-picker-input-updated-start')).toHaveAttribute(
-      'data-size',
-      'sm'
-    );
-    expect(screen.getByTestId('mock-date-picker-input-updated-start')).toHaveAttribute(
-      'data-invalid',
+    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute(
+      'data-disabled',
       'true'
     );
-    expect(screen.getByTestId('mock-date-picker-input-updated-end')).toHaveAttribute(
-      'data-invalid-text',
-      'Invalid range'
-    );
+    expect(
+      screen.getByTestId('mock-date-picker-input-updated-start')
+    ).toHaveAttribute('data-label', 'Updated from');
+    expect(
+      screen.getByTestId('mock-date-picker-input-updated-end')
+    ).toHaveAttribute('data-label', 'Updated to');
+    expect(
+      screen.getByTestId('mock-date-picker-input-updated-start')
+    ).toHaveAttribute('data-placeholder', 'Select range');
+    expect(
+      screen.getByTestId('mock-date-picker-input-updated-start')
+    ).toHaveAttribute('data-size', 'sm');
+    expect(
+      screen.getByTestId('mock-date-picker-input-updated-start')
+    ).toHaveAttribute('data-invalid', 'true');
+    expect(
+      screen.getByTestId('mock-date-picker-input-updated-end')
+    ).toHaveAttribute('data-invalid-text', 'Invalid range');
   });
 
-  it('maps full date range to start/end object and partial range to undefined', () => {
+  it('maps full date range to start/end object and ignores partial range (mid-selection)', () => {
     render(
       <DateRangeFilterField
         startId="created-start"
@@ -145,13 +149,46 @@ describe('DateRangeFilterField', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Trigger Full Range' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Trigger Partial Range' }));
+    // Partial range (length === 1) means the user picked the start date and is
+    // still selecting the end date — onChange should NOT be called again.
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Trigger Partial Range' })
+    );
 
-    expect(onChange).toHaveBeenNthCalledWith(1, {
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledWith({
       start: '2026-05-01',
       end: '2026-05-31',
     });
-    expect(onChange).toHaveBeenNthCalledWith(2, undefined);
+  });
+
+  it('forwards dateFormat to DatePicker when provided', () => {
+    render(
+      <DateRangeFilterField
+        startId="created-start"
+        endId="created-end"
+        startLabel="Start date"
+        value={{ start: null, end: null }}
+        onChange={onChange}
+        dateFormat="Y-m-d"
+      />
+    );
+
+    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute('data-date-format', 'Y-m-d');
+  });
+
+  it('does not set dateFormat on DatePicker when not provided', () => {
+    render(
+      <DateRangeFilterField
+        startId="created-start"
+        endId="created-end"
+        startLabel="Start date"
+        value={{ start: null, end: null }}
+        onChange={onChange}
+      />
+    );
+
+    expect(screen.getByTestId('mock-date-picker')).toHaveAttribute('data-date-format', '');
   });
 
   it('stops click propagation when stopPropagation is enabled', () => {

@@ -1,4 +1,3 @@
-/* eslint-disable custom/hooks-first */
 import { useState, useEffect, useCallback } from 'react';
 
 /**
@@ -27,7 +26,10 @@ export const useColumnSettingsPersistence = ({
    NOTE: Use localStorage only if: client-side table + localStorageKey provided + no manual handlers
   */
   const useLocalStorage =
-    !isServerSideTable && !!localStorageKey && !onVisibilityChange && !onOrderChange;
+    !isServerSideTable &&
+    !!localStorageKey &&
+    !onVisibilityChange &&
+    !onOrderChange;
 
   const storageKey = useLocalStorage ? `table_${localStorageKey}` : null;
 
@@ -43,8 +45,10 @@ export const useColumnSettingsPersistence = ({
           };
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`Failed to load column settings from localStorage (${storageKey}):`, error);
+        console.error(
+          `Failed to load column settings from localStorage (${storageKey}):`,
+          error
+        );
       }
     }
 
@@ -77,8 +81,10 @@ export const useColumnSettingsPersistence = ({
         };
         localStorage.setItem(storageKey, JSON.stringify(settingsToSave));
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`Failed to save column settings to localStorage (${storageKey}):`, error);
+        console.error(
+          `Failed to save column settings to localStorage (${storageKey}):`,
+          error
+        );
       }
     }
   }, [settings, useLocalStorage, storageKey]);
@@ -87,7 +93,9 @@ export const useColumnSettingsPersistence = ({
   const setVisibility = useCallback(
     (newVisibility) => {
       const visibility =
-        typeof newVisibility === 'function' ? newVisibility(settings.visibility) : newVisibility;
+        typeof newVisibility === 'function'
+          ? newVisibility(settings.visibility)
+          : newVisibility;
 
       if (useLocalStorage) {
         // NOTE: Client-side: update local state (will auto-save via useEffect)
@@ -105,7 +113,8 @@ export const useColumnSettingsPersistence = ({
 
   const setOrder = useCallback(
     (newOrder) => {
-      const order = typeof newOrder === 'function' ? newOrder(settings.order) : newOrder;
+      const order =
+        typeof newOrder === 'function' ? newOrder(settings.order) : newOrder;
 
       if (useLocalStorage) {
         // NOTE: Client-side: update local state (will auto-save via useEffect)
@@ -128,8 +137,10 @@ export const useColumnSettingsPersistence = ({
         localStorage.removeItem(storageKey);
         setSettings({ visibility: {}, order: [] });
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(`Failed to clear column settings from localStorage (${storageKey}):`, error);
+        console.error(
+          `Failed to clear column settings from localStorage (${storageKey}):`,
+          error
+        );
       }
     }
   }, [useLocalStorage, storageKey]);

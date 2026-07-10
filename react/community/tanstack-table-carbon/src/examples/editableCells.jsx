@@ -1,14 +1,7 @@
 import { useState } from 'react';
 import { TanstackTable } from '@/lib';
-import { Add as AddIcon, TableSplit as TableIcon } from '@carbon/icons-react';
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  Button,
-  Tag,
-  UnorderedList,
-  ListItem,
-} from '@carbon/react';
+import { Add as AddIcon } from '@carbon/icons-react';
+import { Button, Tag, UnorderedList, ListItem } from '@carbon/react';
 import commonStyles from './scss/common.module.scss';
 
 const formatDateForStorage = (date) => {

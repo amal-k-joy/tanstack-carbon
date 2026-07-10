@@ -138,12 +138,14 @@ export type CustomFilterItem =
       type: 'date';
       label: string;
       defaultValue?: string;
+      dateFormat?: string;
     }
   | {
       id: string;
       type: 'dateRange';
       label: string;
       defaultValue?: { start?: string; end?: string };
+      dateFormat?: string;
     }
   | {
       id: string;
@@ -169,12 +171,34 @@ export interface CustomFilterSection {
   filters: CustomFilterItem[];
 }
 
+/** A config entry is either a standalone filter item or an accordion section */
+export type CustomFilterConfigEntry = CustomFilterItem | CustomFilterSection;
+
 export interface SideFilterPanelFeature {
-  width?: string;
+  /** Panel width in pixels (default: 350) */
+  width?: number;
+  /** Called when "Advanced filters" link is clicked */
   onAdvancedFilterClick?: () => void;
-  onApply?: (filters: Record<string, any>) => void;
-  onReset?: () => void;
-  config?: CustomFilterSection[];
+  /**
+   * Called when Apply is clicked in custom-filter mode.
+   * Receives the flat map of all filter values.
+   */
+  onApply?: (
+    filterValues: Record<string, any>,
+    meta?: { changedFilters: string[] }
+  ) => void;
+  /** Called when Clear/Reset is clicked in custom-filter mode */
+  onReset?: (
+    filterValues: Record<string, any>,
+    meta?: { changedFilters: string[] }
+  ) => void;
+  /**
+   * Custom filter configuration — array of filter items and/or accordion sections.
+   * When provided, the panel renders these instead of column-based filters.
+   */
+  config?: CustomFilterConfigEntry[];
+  /** Hide the search box at the top of the filter panel (default: false) */
+  hideSearch?: boolean;
 }
 
 export interface TableFeatures {
@@ -289,7 +313,10 @@ export interface TanstackTableProps {
   /** Loading state - shows skeleton when true */
   isLoading?: boolean;
 
-  /** Toolbar configuration - array of toolbar elements with order control */
+  /**
+   * Toolbar configuration — array of toolbar elements with order control.
+   * Pass `null`, `undefined`, or `[]` to show no toolbar at all.
+   */
   toolbar?: ToolbarItem[] | null;
 
   /** Feature configuration object */

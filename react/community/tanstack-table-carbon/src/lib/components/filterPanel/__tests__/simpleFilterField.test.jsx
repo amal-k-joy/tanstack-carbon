@@ -21,13 +21,23 @@ vi.mock('../fields', () => ({
       ))}
     </div>
   ),
-  DateFilterField: ({ label, value, onChange }) => (
-    <button type="button" onClick={() => onChange(value ? '' : '2026-05-25')}>
+  DateFilterField: ({ label, value, onChange, dateFormat }) => (
+    <button
+      type="button"
+      data-testid="date-filter-field"
+      data-date-format={dateFormat || ''}
+      onClick={() => onChange(value ? '' : '2026-05-25')}
+    >
       {label}
     </button>
   ),
-  DateRangeFilterField: ({ startLabel, endLabel, onChange }) => (
-    <button type="button" onClick={() => onChange({ start: '2026-01-01', end: '2026-01-31' })}>
+  DateRangeFilterField: ({ startLabel, endLabel, onChange, dateFormat }) => (
+    <button
+      type="button"
+      data-testid="date-range-filter-field"
+      data-date-format={dateFormat || ''}
+      onClick={() => onChange({ start: '2026-01-01', end: '2026-01-31' })}
+    >
       {`${startLabel} ${endLabel}`}
     </button>
   ),
@@ -113,12 +123,13 @@ const createColumn = ({
   id = 'status',
   header = 'Status',
   filterVariant,
+  dateFormat,
   uniqueValues = new Map(),
 } = {}) => ({
   id,
   columnDef: {
     header,
-    meta: { filterVariant },
+    meta: { filterVariant, dateFormat },
   },
   getFacetedUniqueValues: () => uniqueValues,
 });
@@ -320,6 +331,49 @@ describe('SimpleFilterField', () => {
 
     expect(sliderValuesRef.current.score).toBe(55);
     expect(updateLocalFilter).toHaveBeenCalledWith('score', { min: 10, max: 60 });
+  });
+
+  it('forwards dateFormat from column meta to DateFilterField', () => {
+    render(
+      <SimpleFilterField
+        {...createProps({
+          columnData: {
+            column: createColumn({
+              id: 'createdDate',
+              header: 'Created Date',
+              filterVariant: 'date',
+              dateFormat: 'Y-m-d',
+            }),
+            matchedByLabel: true,
+          },
+        })}
+      />
+    );
+
+    expect(screen.getByTestId('date-filter-field')).toHaveAttribute('data-date-format', 'Y-m-d');
+  });
+
+  it('forwards dateFormat from column meta to DateRangeFilterField', () => {
+    render(
+      <SimpleFilterField
+        {...createProps({
+          columnData: {
+            column: createColumn({
+              id: 'range',
+              header: 'Range',
+              filterVariant: 'dateRange',
+              dateFormat: 'Y-m-d',
+            }),
+            matchedByLabel: true,
+          },
+        })}
+      />
+    );
+
+    expect(screen.getByTestId('date-range-filter-field')).toHaveAttribute(
+      'data-date-format',
+      'Y-m-d'
+    );
   });
 
   it('renders date, dateRange, time, and default text filters', () => {

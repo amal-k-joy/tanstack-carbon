@@ -9,8 +9,7 @@ const mockFilterSection = vi.fn(({ section, children, defaultOpen }) => (
   <div
     data-testid={`section-${section.id}`}
     data-section-label={section.label}
-    data-default-open={String(Boolean(defaultOpen))}
-  >
+    data-default-open={String(Boolean(defaultOpen))}>
     {children}
   </div>
 ));
@@ -69,8 +68,7 @@ describe('CustomFilterPanel', () => {
           onClick={() => onChange('custom-next')}
           data-value={String(value)}
           data-disabled={String(disabled)}
-          data-error={error || ''}
-        >
+          data-error={error || ''}>
           Custom Render
         </button>
       )),
@@ -116,8 +114,7 @@ describe('CustomFilterPanel', () => {
           data-disabled={String(disabled)}
           data-error={error || ''}
           data-search-term={searchTerm}
-          data-size={size}
-        >
+          data-size={size}>
           {filter.label}
         </div>
       )
@@ -136,6 +133,7 @@ describe('CustomFilterPanel', () => {
         'custom-filter': 'custom-current',
       },
       resetFilters,
+      isFilterDisabled: expect.any(Function),
     });
   });
 
@@ -173,7 +171,9 @@ describe('CustomFilterPanel', () => {
 
     renderPanel();
 
-    expect(screen.queryByTestId('rendered-filter-owner')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('rendered-filter-owner')
+    ).not.toBeInTheDocument();
   });
 
   it('passes disabled and error state from hook into rendered filters', () => {
@@ -192,7 +192,10 @@ describe('CustomFilterPanel', () => {
     renderPanel();
 
     expect(onValidationChange).toHaveBeenCalledWith(false);
-    expect(screen.getByTestId('rendered-filter-owner')).toHaveAttribute('data-disabled', 'true');
+    expect(screen.getByTestId('rendered-filter-owner')).toHaveAttribute(
+      'data-disabled',
+      'true'
+    );
     expect(screen.getByTestId('rendered-filter-owner')).toHaveAttribute(
       'data-error',
       'Owner is invalid'
@@ -205,8 +208,12 @@ describe('CustomFilterPanel', () => {
     });
 
     expect(screen.getByTestId('rendered-filter-owner')).toBeInTheDocument();
-    expect(screen.queryByTestId('section-section-status')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Custom Render' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('section-section-status')
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Custom Render' })
+    ).not.toBeInTheDocument();
   });
 
   it('shows all section filters when section title matches search term', () => {
@@ -215,8 +222,14 @@ describe('CustomFilterPanel', () => {
     });
 
     expect(screen.getByTestId('section-section-status')).toBeInTheDocument();
-    expect(screen.getByTestId('rendered-filter-status')).toHaveAttribute('data-search-term', '');
-    expect(screen.getByTestId('rendered-filter-priority')).toHaveAttribute('data-search-term', '');
+    expect(screen.getByTestId('rendered-filter-status')).toHaveAttribute(
+      'data-search-term',
+      ''
+    );
+    expect(screen.getByTestId('rendered-filter-priority')).toHaveAttribute(
+      'data-search-term',
+      ''
+    );
   });
 
   it('filters section items by option text match when section title does not match', () => {
@@ -229,7 +242,9 @@ describe('CustomFilterPanel', () => {
       'data-search-term',
       'inactive'
     );
-    expect(screen.queryByTestId('rendered-filter-priority')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('rendered-filter-priority')
+    ).not.toBeInTheDocument();
   });
 
   it('does not render section when no section filters match search', () => {
@@ -237,8 +252,12 @@ describe('CustomFilterPanel', () => {
       searchTerm: 'nonexistent',
     });
 
-    expect(screen.queryByTestId('section-section-status')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('rendered-filter-owner')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('section-section-status')
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('rendered-filter-owner')
+    ).not.toBeInTheDocument();
   });
 
   it('returns null when renderCustomFilter returns null', () => {
@@ -250,7 +269,9 @@ describe('CustomFilterPanel', () => {
 
     renderPanel();
 
-    expect(screen.queryByTestId('rendered-filter-owner')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('rendered-filter-owner')
+    ).not.toBeInTheDocument();
     expect(screen.getByTestId('rendered-filter-status')).toBeInTheDocument();
   });
 

@@ -3,19 +3,20 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import EditableDateCell from '../editableDateCell';
 
-const mockTableCell = vi.fn(({ children, id, onKeyDown, onDoubleClick, ...rest }) => (
-  <td id={id} onKeyDown={onKeyDown} onDoubleClick={onDoubleClick} {...rest}>
-    {children}
-  </td>
-));
+const mockTableCell = vi.fn(
+  ({ children, id, onKeyDown, onDoubleClick, ...rest }) => (
+    <td id={id} onKeyDown={onKeyDown} onDoubleClick={onDoubleClick} {...rest}>
+      {children}
+    </td>
+  )
+);
 
 const mockDatePicker = vi.fn(({ children, onChange, appendTo, value }) => (
   <div
     data-testid="date-picker"
     data-value={value}
     data-has-append-to={String(Boolean(appendTo))}
-    onClick={() => onChange?.([], '2026-05-25')}
-  >
+    onClick={() => onChange?.([], '2026-05-25')}>
     {children}
   </div>
 ));
@@ -104,7 +105,7 @@ describe('EditableDateCell', () => {
     };
 
     cell = {
-      row: { index: 0 },
+      row: { index: 0, original: { date: '2026-05-01' } },
       column: {
         id: 'date',
       },
@@ -174,7 +175,11 @@ describe('EditableDateCell', () => {
 
     fireEvent.click(screen.getByTestId('date-picker'));
 
-    expect(updateData).toHaveBeenCalledWith(0, 'date', '2026-05-25');
+    expect(updateData).toHaveBeenCalledWith(
+      { date: '2026-05-01' },
+      'date',
+      '2026-05-25'
+    );
     expect(setEditingId).toHaveBeenCalledWith(null);
 
     vi.advanceTimersByTime(10);

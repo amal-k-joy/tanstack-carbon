@@ -18,40 +18,17 @@ const CustomTableSkeleton = ({
   tableSize,
   useZebraStyles,
   showPagination,
-  showToolbar,
   height,
 }) => {
   const skeletonRows = Array.from({ length: rowCount }, (_, i) => i);
 
-  // NOTE: Calculate container height accounting for toolbar
-  const toolbarHeight = 48; // Standard toolbar height
-  const containerHeight =
-    height && showToolbar
-      ? (typeof height === 'number' ? height : parseInt(height)) - toolbarHeight
-      : height;
-
   return (
     <div className={styles.skeletonWrapper}>
-      {showToolbar && (
-        <div className={styles.toolbarSkeleton}>
-          <div className={styles.toolbarLeft}>
-            <SkeletonText width="150px" />
-          </div>
-          <div className={styles.toolbarRight}>
-            <SkeletonText width="200px" />
-            <SkeletonText width="40px" />
-            <SkeletonText width="40px" />
-          </div>
-        </div>
-      )}
       <TableContainer
         style={
-          containerHeight
+          height
             ? {
-                maxHeight:
-                  typeof containerHeight === 'number'
-                    ? `${containerHeight}px`
-                    : containerHeight,
+                maxHeight: typeof height === 'number' ? `${height}px` : height,
                 overflow: 'auto',
               }
             : undefined

@@ -1,3 +1,9 @@
+.tblToolbarDisabled {
+  pointer-events: none;
+  opacity: 0.5;
+  user-select: none;
+}
+
 .tblToolbar {
   :global(.cds--table-toolbar) {
     border-bottom: 1px solid $border-subtle-01;
